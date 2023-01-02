@@ -1,6 +1,8 @@
 package main
 
-import "chiko/pkg/controller"
+import (
+	"chiko/pkg/controller"
+)
 
 func main() {
 	controller.NewController().Run()

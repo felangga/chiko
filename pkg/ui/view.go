@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"github.com/epiclabs-io/winman"
 	"github.com/rivo/tview"
 )
 
@@ -9,10 +10,18 @@ type View struct {
 	MainLayout  *tview.Flex
 	MenuList    *tview.List
 	OutputPanel *tview.TextView
+	WinMan      *winman.Manager
+}
+
+func (v View) SetFocus(p tview.Primitive) {
+	go v.App.QueueUpdateDraw(func() {
+		v.App.SetFocus(p)
+	})
 }
 
 func NewView() View {
 	app := tview.NewApplication()
+	wm := winman.NewWindowManager()
 
 	title := tview.NewTextView()
 	title.SetBorder(true)
@@ -25,7 +34,8 @@ func NewView() View {
 	menuList.SetBorderPadding(1, 1, 1, 1)
 
 	outputPanel := tview.NewTextView()
-	outputPanel.SetTitle(" Output ")
+	outputPanel.SetDynamicColors(true)
+	outputPanel.SetTitle(" Output Logs ")
 	outputPanel.SetBorder(true)
 	outputPanel.SetBorderPadding(1, 1, 1, 1)
 	outputPanel.SetScrollable(true).SetChangedFunc(func() {
@@ -40,13 +50,21 @@ func NewView() View {
 		AddItem(title, 3, 1, false).
 		AddItem(childLayout, 0, 1, true)
 
-	app.SetRoot(mainLayout, true)
+	window := wm.NewWindow().
+		Show().
+		SetRoot(mainLayout).
+		SetBorder(false)
+
+	window.Maximize()
+
+	app.SetRoot(wm, true)
 
 	v := View{
 		app,
 		mainLayout,
 		menuList,
 		outputPanel,
+		wm,
 	}
 	return v
 }

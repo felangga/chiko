@@ -2,34 +2,39 @@ package controller
 
 import (
 	"chiko/pkg/ui"
+	"context"
+
+	"google.golang.org/grpc"
 )
 
 type Controller struct {
-	ui ui.View
+	ctx  context.Context
+	ui   ui.View
+	conn *Connection
+}
+
+type Connection struct {
+	ServerURL         string
+	ActiveConnection  *grpc.ClientConn
+	AvailableServices []string
+	SelectedMethod    string
+	AvailableMethods  []string
 }
 
 func NewController() Controller {
+
 	ui := ui.NewView()
+	conn := Connection{
+		ServerURL: "localhost:50051",
+	}
+
 	c := Controller{
+		context.Background(),
 		ui,
+		&conn,
 	}
 
 	return c
-}
-
-func (c Controller) setServerURL() {
-	c.PrintLog("Set server URL")
-}
-
-func (c Controller) initMenu() {
-	c.ui.MenuList.AddItem("Server URL", "", 'u', c.setServerURL)
-	c.ui.MenuList.AddItem("Method", "", 'm', nil)
-	c.ui.MenuList.AddItem("Metadata", "", 'd', nil)
-}
-
-func (c Controller) initSys() {
-	c.ui.OutputPanel.SetDynamicColors(true)
-	c.ui.OutputPanel.SetText("[blue]Welcome to [white]Chiko v.0.0.1")
 }
 
 func (c Controller) Run() error {
