@@ -5,50 +5,48 @@ import (
 )
 
 type View struct {
-	App *tview.Application
-}
-
-func setupLayout() tview.Primitive {
-	return tview.NewFlex().
-		AddItem(tview.NewBox().SetBorder(true).SetTitle("Bookmarks"), 0, 1, false).
-		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
-			AddItem(setupRequestPayload(), 0, 1, false).
-			AddItem(tview.NewBox().SetBorder(true).SetTitle("Response"), 0, 3, false), 0, 2, false)
-}
-
-func setupRequestPayload() tview.Primitive {
-	form := tview.NewForm().
-		AddInputField("Server URL", "", 50, nil, nil).
-		AddInputField("Last name", "", 20, nil, nil)
-	form.SetBorder(true).SetTitle("Chiko v0.0.1").SetTitleAlign(tview.AlignCenter)
-	return form
+	App         *tview.Application
+	MainLayout  *tview.Flex
+	MenuList    *tview.List
+	OutputPanel *tview.TextView
 }
 
 func NewView() View {
 	app := tview.NewApplication()
 
-	// list := tview.NewList().
-	// 	ShowSecondaryText(false)
-	// list.SetBorder(true).
-	// 	SetTitleAlign(tview.AlignLeft)
+	title := tview.NewTextView()
+	title.SetBorder(true)
+	title.SetText("Chiko v.0.0.1")
+	title.SetTextAlign(tview.AlignCenter)
 
-	// main := tview.NewFlex().
-	// 	AddItem(list, 0, 1, true)
+	// Setup the side bar menu
+	menuList := tview.NewList().ShowSecondaryText(false)
+	menuList.SetBorder(true).SetTitle(" Menu ")
+	menuList.SetBorderPadding(1, 1, 1, 1)
 
-	// pages := tview.NewPages().
-	// 	AddPage("main", main, true, true)
+	outputPanel := tview.NewTextView()
+	outputPanel.SetTitle(" Output ")
+	outputPanel.SetBorder(true)
+	outputPanel.SetBorderPadding(1, 1, 1, 1)
+	outputPanel.SetScrollable(true).SetChangedFunc(func() {
+		app.Draw()
+	})
 
-	// frame := tview.NewFrame(pages)
-	// frame.AddText("[::b][↓,j/↑,k][::-] Down/Up [::b][Enter,l/u,h][::-] Lower/Upper [::b][d[][::-] Download [::b][q[][::-] Quit", false, tview.AlignCenter, tcell.ColorWhite)
-	layout := setupLayout()
+	// Setup the main layout
+	childLayout := tview.NewFlex().SetDirection(tview.FlexColumn).
+		AddItem(menuList, 30, 1, true).
+		AddItem(outputPanel, 0, 4, false)
+	mainLayout := tview.NewFlex().SetDirection(tview.FlexRow).
+		AddItem(title, 3, 1, false).
+		AddItem(childLayout, 0, 1, true)
 
-	if err := app.SetRoot(layout, true).EnableMouse(true).Run(); err != nil {
-		panic(err)
-	}
+	app.SetRoot(mainLayout, true)
 
 	v := View{
 		app,
+		mainLayout,
+		menuList,
+		outputPanel,
 	}
-
 	return v
 }
