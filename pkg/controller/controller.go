@@ -4,6 +4,7 @@ import (
 	"chiko/pkg/ui"
 	"context"
 
+	"github.com/fullstorydev/grpcurl"
 	"google.golang.org/grpc"
 )
 
@@ -17,8 +18,10 @@ type Connection struct {
 	ServerURL         string
 	ActiveConnection  *grpc.ClientConn
 	AvailableServices []string
-	SelectedMethod    string
+	SelectedMethod    *string
 	AvailableMethods  []string
+	RequestPayload    string
+	DescriptorSource  grpcurl.DescriptorSource
 }
 
 func NewController() Controller {

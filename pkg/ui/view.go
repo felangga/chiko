@@ -1,6 +1,9 @@
 package ui
 
 import (
+	"chiko/pkg/entity"
+	"fmt"
+
 	"github.com/epiclabs-io/winman"
 	"github.com/rivo/tview"
 )
@@ -25,7 +28,7 @@ func NewView() View {
 
 	title := tview.NewTextView()
 	title.SetBorder(true)
-	title.SetText("Chiko v.0.0.1")
+	title.SetText(fmt.Sprintf("Chiko v%s", entity.APP_VERSION))
 	title.SetTextAlign(tview.AlignCenter)
 
 	// Setup the side bar menu
