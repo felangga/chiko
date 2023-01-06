@@ -1,4 +1,4 @@
-package ui
+package entity
 
 type Theme struct {
 	Name   string
@@ -18,6 +18,7 @@ var (
 			"Shortcut":    "#00ffdf",
 			"Menu":        "#85e7d2",
 			"Description": "#003d6b",
+			"WindowColor": "#444444",
 		},
 	}
 
@@ -33,8 +34,9 @@ var (
 			"Shortcut":    "yellow",
 			"Menu":        "teal",
 			"Description": "green",
+			"WindowColor": "#444444",
 		},
 	}
 
-	theme = TerminalTheme
+	SelectedTheme = TerminalTheme
 )

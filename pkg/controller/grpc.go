@@ -12,13 +12,24 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (c Controller) CheckGRPC() {
+func (c Controller) CheckGRPC(serverURL string) {
+	// Close active connection if we are going to connect to another server
+	if c.conn.ActiveConnection != nil {
+		err := c.conn.ActiveConnection.Close()
+		if err != nil {
+			c.PrintLog("failed to disconnect from server", LOG_ERROR)
+			return
+		}
+		c.PrintLog(fmt.Sprintf("disconnected from %s", c.conn.ServerURL), LOG_INFO)
+	}
 	conn, err := grpcurl.BlockingDial(c.ctx, "tcp", c.conn.ServerURL, nil)
 	if err != nil {
 		c.PrintLog(" ⛔️ "+err.Error(), LOG_ERROR)
 		return
 	}
 	c.conn.ActiveConnection = conn
+	c.conn.ServerURL = serverURL
+	c.PrintLog("Server URL set to [blue]"+c.conn.ServerURL, LOG_INFO)
 	c.PrintLog(" ✅ connected to "+c.conn.ServerURL, LOG_INFO)
 	refClient := grpcreflect.NewClientV1Alpha(c.ctx, reflectpb.NewServerReflectionClient(conn))
 	reflSource := grpcurl.DescriptorSourceFromServer(c.ctx, refClient)
@@ -29,6 +40,7 @@ func (c Controller) CheckGRPC() {
 	}
 	c.conn.DescriptorSource = reflSource
 	c.PrintLog(" 🤩 this server support server reflection", LOG_INFO)
+	c.conn.AvailableMethods = []string{} // Reset available methods
 	for _, svc := range svcs {
 		c.conn.AvailableServices = append(c.conn.AvailableServices, svc)
 		methods, err := grpcurl.ListMethods(reflSource, svc)

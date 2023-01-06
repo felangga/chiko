@@ -36,6 +36,10 @@ func NewView() View {
 	menuList.SetBorder(true).SetTitle(" Menu ")
 	menuList.SetBorderPadding(1, 1, 1, 1)
 
+	bookmarkList := tview.NewList().ShowSecondaryText(false)
+	bookmarkList.SetBorder(true).SetTitle(" Bookmarks ")
+	bookmarkList.SetBorderPadding(1, 1, 1, 1)
+
 	outputPanel := tview.NewTextView()
 	outputPanel.SetDynamicColors(true)
 	outputPanel.SetTitle(" Output Logs ")
@@ -46,8 +50,12 @@ func NewView() View {
 	})
 
 	// Setup the main layout
+	splitSidebar := tview.NewFlex().SetDirection(tview.FlexRow).
+		AddItem(menuList, 15, 1, true).
+		AddItem(bookmarkList, 0, 1, false)
+
 	childLayout := tview.NewFlex().SetDirection(tview.FlexColumn).
-		AddItem(menuList, 30, 1, true).
+		AddItem(splitSidebar, 30, 1, true).
 		AddItem(outputPanel, 0, 4, false)
 	mainLayout := tview.NewFlex().SetDirection(tview.FlexRow).
 		AddItem(title, 3, 1, false).
