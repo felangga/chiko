@@ -20,23 +20,17 @@ func (c Controller) initMenu() {
 	c.ui.MenuList.AddItem("Request Payload", "", 'p', c.setRequestPayload)
 	c.ui.MenuList.AddItem("Invoke", "", 'i', c.doInvoke)
 	c.ui.MenuList.AddItem("------------------", "", 0, nil)
-	c.ui.MenuList.AddItem("Save to Bookmark", "", 'b', nil)
-}
-
-func (c Controller) initSys() {
-	c.PrintLog(fmt.Sprintf("✨ Welcome to Chiko v%s", entity.APP_VERSION), LOG_INFO)
+	c.ui.MenuList.AddItem("Save to Bookmark", "", 'b', c.doSaveBookmark)
 }
 
 func (c Controller) setServerURL() {
-	tmpURL := c.conn.ServerURL
-
 	// Create Set Server URL From
-	txtServerURL := tview.NewInputField().SetText(tmpURL)
+	txtServerURL := tview.NewInputField().SetText(c.conn.ServerURL)
 	wnd := winman.NewWindow().
 		Show().
 		SetRoot(txtServerURL).
 		SetDraggable(true).
-		SetTitle("Enter Server URL")
+		SetTitle("🌏 Enter Server URL ")
 
 	wnd.SetBackgroundColor(tcell.GetColor(entity.SelectedTheme.Colors["WindowColor"]))
 	txtServerURL.SetFieldBackgroundColor(wnd.GetBackgroundColor())
@@ -48,7 +42,7 @@ func (c Controller) setServerURL() {
 			c.ui.SetFocus(c.ui.MenuList)
 		case tcell.KeyEnter:
 
-			go c.CheckGRPC(tmpURL)
+			go c.CheckGRPC(txtServerURL.GetText())
 
 			// Remove the window and restore focus to menu list
 			c.ui.WinMan.RemoveWindow(wnd)
@@ -59,7 +53,7 @@ func (c Controller) setServerURL() {
 
 	wnd.SetRect(0, 0, 50, 1)
 	wnd.AddButton(&winman.Button{
-		Symbol: 'X',
+		Symbol: '❌',
 		OnClick: func() {
 			c.ui.WinMan.RemoveWindow(wnd)
 			c.ui.SetFocus(c.ui.MenuList)
@@ -72,6 +66,11 @@ func (c Controller) setServerURL() {
 }
 
 func (c Controller) setMethod() {
+	if c.conn.ActiveConnection == nil {
+		c.PrintLog("❗ no active connection", LOG_WARNING)
+		return
+	}
+
 	// Create Set Server URL From
 	listMethods := tview.NewList().
 		ShowSecondaryText(false)
@@ -81,14 +80,16 @@ func (c Controller) setMethod() {
 		SetRoot(listMethods).
 		SetDraggable(true).
 		SetResizable(true).
-		SetTitle("Select gRPC Method")
+		SetTitle(" Select gRPC Method ")
 
 	wnd.SetBackgroundColor(tcell.GetColor(entity.SelectedTheme.Colors["WindowColor"]))
 	listMethods.SetBackgroundColor(wnd.GetBackgroundColor())
 
 	for i, method := range c.conn.AvailableMethods {
 		listMethods.AddItem(method, "", 0, nil)
-		if c.conn.SelectedMethod == &method {
+
+		// Ignore if none was selected before
+		if c.conn.SelectedMethod != nil && *c.conn.SelectedMethod == method {
 			listMethods.SetCurrentItem(i)
 		}
 	}
@@ -104,7 +105,7 @@ func (c Controller) setMethod() {
 			c.conn.SelectedMethod = &item
 
 			// Remove the window and restore focus to menu list
-			c.PrintLog(" 👉 Method set to [blue]"+*c.conn.SelectedMethod, LOG_INFO)
+			c.PrintLog("👉 Method set to [blue]"+*c.conn.SelectedMethod, LOG_INFO)
 			c.ui.WinMan.RemoveWindow(wnd)
 			c.ui.SetFocus(c.ui.MenuList)
 		}
@@ -114,7 +115,7 @@ func (c Controller) setMethod() {
 	wnd.SetModal(true)
 	wnd.SetRect(0, 0, 70, 7)
 	wnd.AddButton(&winman.Button{
-		Symbol: 'X',
+		Symbol: '❌',
 		OnClick: func() {
 			c.ui.WinMan.RemoveWindow(wnd)
 			c.ui.SetFocus(c.ui.MenuList)
@@ -143,6 +144,11 @@ func (c Controller) setMethod() {
 }
 
 func (c Controller) setRequestPayload() {
+	if c.conn.ActiveConnection == nil {
+		c.PrintLog("❗ no active connection", LOG_WARNING)
+		return
+	}
+
 	requestPayload := c.conn.RequestPayload
 
 	// Create Set Server URL From
@@ -150,7 +156,7 @@ func (c Controller) setRequestPayload() {
 	wnd := winman.NewWindow().
 		Show().
 		SetRoot(form).
-		SetTitle("Request Payload").
+		SetTitle(" Request Payload ").
 		SetDraggable(true)
 
 	wnd.SetBackgroundColor(tcell.GetColor(entity.SelectedTheme.Colors["WindowColor"]))

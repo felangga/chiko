@@ -13,6 +13,7 @@ import (
 )
 
 func (c Controller) CheckGRPC(serverURL string) {
+	c.conn.ServerURL = serverURL
 	// Close active connection if we are going to connect to another server
 	if c.conn.ActiveConnection != nil {
 		err := c.conn.ActiveConnection.Close()
@@ -21,16 +22,18 @@ func (c Controller) CheckGRPC(serverURL string) {
 			return
 		}
 		c.PrintLog(fmt.Sprintf("disconnected from %s", c.conn.ServerURL), LOG_INFO)
+		c.conn.ActiveConnection = nil
 	}
-	conn, err := grpcurl.BlockingDial(c.ctx, "tcp", c.conn.ServerURL, nil)
+
+	conn, err := grpcurl.BlockingDial(c.ctx, "tcp", serverURL, nil)
 	if err != nil {
-		c.PrintLog(" ⛔️ "+err.Error(), LOG_ERROR)
+		c.PrintLog("⛔️ "+err.Error(), LOG_ERROR)
 		return
 	}
 	c.conn.ActiveConnection = conn
-	c.conn.ServerURL = serverURL
-	c.PrintLog("Server URL set to [blue]"+c.conn.ServerURL, LOG_INFO)
-	c.PrintLog(" ✅ connected to "+c.conn.ServerURL, LOG_INFO)
+
+	c.PrintLog("🌏 server URL set to [blue]"+c.conn.ServerURL, LOG_INFO)
+	c.PrintLog("✅ connected to [blue]"+c.conn.ServerURL, LOG_INFO)
 	refClient := grpcreflect.NewClientV1Alpha(c.ctx, reflectpb.NewServerReflectionClient(conn))
 	reflSource := grpcurl.DescriptorSourceFromServer(c.ctx, refClient)
 	svcs, err := grpcurl.ListServices(reflSource)
@@ -39,7 +42,7 @@ func (c Controller) CheckGRPC(serverURL string) {
 		return
 	}
 	c.conn.DescriptorSource = reflSource
-	c.PrintLog(" 🤩 this server support server reflection", LOG_INFO)
+	c.PrintLog("🤩 this server support server reflection", LOG_INFO)
 	c.conn.AvailableMethods = []string{} // Reset available methods
 	for _, svc := range svcs {
 		c.conn.AvailableServices = append(c.conn.AvailableServices, svc)
@@ -59,6 +62,11 @@ func (c Controller) parseRequestResponse(text string) [][]string {
 }
 
 func (c Controller) doInvoke() {
+	if c.conn.ActiveConnection == nil {
+		c.PrintLog("❗ no active connection", LOG_WARNING)
+		return
+	}
+
 	options := grpcurl.FormatOptions{
 		EmitJSONDefaultFields: true,
 		AllowUnknownFields:    true,

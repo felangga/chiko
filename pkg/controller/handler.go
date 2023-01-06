@@ -2,6 +2,7 @@ package controller
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/golang/protobuf/proto"
@@ -25,13 +26,23 @@ type handler struct {
 }
 
 func (h *handler) OnReceiveResponse(msg proto.Message) {
+	// Print headers to log window
+	headerResp := "Headers:"
+	for key, values := range h.respHeaders {
+		headerResp += fmt.Sprintf("\n- %s: %s", key, strings.Join(values, ","))
+	}
+
+	statusCode := fmt.Sprintf("Status code: %d %s", h.respStatus.Code(), h.respStatus.Message())
+
+	// Print the gRPC response
 	jsm := jsonpb.Marshaler{Indent: "  "}
 	respStr, err := jsm.MarshalToString(msg)
 	if err != nil {
 		panic(fmt.Errorf("failed to generate JSON form of response message: %v", err))
 	}
 	h.respMessages = append(h.respMessages, respStr)
-	h.controller.PrintLog("\nResponse Payload:\n"+respStr, LOG_INFO)
+	output := fmt.Sprintf("\n%s\n\n%s\n[yellow]%s", headerResp, statusCode, respStr)
+	h.controller.PrintLog(output, LOG_INFO)
 }
 
 func (h *handler) OnResolveMethod(md *desc.MethodDescriptor) {

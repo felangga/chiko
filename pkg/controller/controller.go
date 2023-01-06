@@ -1,33 +1,23 @@
 package controller
 
 import (
+	"chiko/pkg/entity"
 	"chiko/pkg/ui"
 	"context"
-
-	"github.com/fullstorydev/grpcurl"
-	"google.golang.org/grpc"
+	"fmt"
 )
 
 type Controller struct {
-	ctx  context.Context
-	ui   ui.View
-	conn *Connection
-}
-
-type Connection struct {
-	ServerURL         string
-	ActiveConnection  *grpc.ClientConn
-	AvailableServices []string
-	SelectedMethod    *string
-	AvailableMethods  []string
-	RequestPayload    string
-	DescriptorSource  grpcurl.DescriptorSource
+	ctx       context.Context
+	ui        ui.View
+	conn      *entity.Connection
+	bookmarks *[]entity.Connection
 }
 
 func NewController() Controller {
 
 	ui := ui.NewView()
-	conn := Connection{
+	conn := entity.Connection{
 		ServerURL: "localhost:50051",
 	}
 
@@ -35,9 +25,17 @@ func NewController() Controller {
 		context.Background(),
 		ui,
 		&conn,
+		nil,
 	}
+	// Load bookmarks
+	c.loadBookmark()
 
 	return c
+}
+
+func (c Controller) initSys() {
+	c.PrintLog(fmt.Sprintf("✨ Welcome to Chiko v%s", entity.APP_VERSION), LOG_INFO)
+
 }
 
 func (c Controller) Run() error {

@@ -9,11 +9,12 @@ import (
 )
 
 type View struct {
-	App         *tview.Application
-	MainLayout  *tview.Flex
-	MenuList    *tview.List
-	OutputPanel *tview.TextView
-	WinMan      *winman.Manager
+	App          *tview.Application
+	MainLayout   *tview.Flex
+	MenuList     *tview.List
+	BookmarkList *tview.List
+	OutputPanel  *tview.TextView
+	WinMan       *winman.Manager
 }
 
 func (v View) SetFocus(p tview.Primitive) {
@@ -33,16 +34,16 @@ func NewView() View {
 
 	// Setup the side bar menu
 	menuList := tview.NewList().ShowSecondaryText(false)
-	menuList.SetBorder(true).SetTitle(" Menu ")
+	menuList.SetBorder(true).SetTitle(" 🐶 Menu ")
 	menuList.SetBorderPadding(1, 1, 1, 1)
 
 	bookmarkList := tview.NewList().ShowSecondaryText(false)
-	bookmarkList.SetBorder(true).SetTitle(" Bookmarks ")
+	bookmarkList.SetBorder(true).SetTitle(" 📚 Bookmarks ")
 	bookmarkList.SetBorderPadding(1, 1, 1, 1)
 
 	outputPanel := tview.NewTextView()
 	outputPanel.SetDynamicColors(true)
-	outputPanel.SetTitle(" Output Logs ")
+	outputPanel.SetTitle(" 📃 Output Logs ")
 	outputPanel.SetBorder(true)
 	outputPanel.SetBorderPadding(1, 1, 1, 1)
 	outputPanel.SetScrollable(true).SetChangedFunc(func() {
@@ -57,6 +58,7 @@ func NewView() View {
 	childLayout := tview.NewFlex().SetDirection(tview.FlexColumn).
 		AddItem(splitSidebar, 30, 1, true).
 		AddItem(outputPanel, 0, 4, false)
+
 	mainLayout := tview.NewFlex().SetDirection(tview.FlexRow).
 		AddItem(title, 3, 1, false).
 		AddItem(childLayout, 0, 1, true)
@@ -74,6 +76,7 @@ func NewView() View {
 		app,
 		mainLayout,
 		menuList,
+		bookmarkList,
 		outputPanel,
 		wm,
 	}
