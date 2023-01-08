@@ -51,6 +51,7 @@ func (c Controller) setServerURL() {
 		return event
 	})
 
+	wnd.SetModal(true)
 	wnd.SetRect(0, 0, 50, 1)
 	wnd.AddButton(&winman.Button{
 		Symbol: '❌',

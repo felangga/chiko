@@ -20,22 +20,21 @@ func NewController() Controller {
 	conn := entity.Connection{
 		ServerURL: "localhost:50051",
 	}
-
+	init := &[]entity.Connection{}
 	c := Controller{
 		context.Background(),
 		ui,
 		&conn,
-		nil,
+		init,
 	}
-	// Load bookmarks
-	c.loadBookmark()
 
 	return c
 }
 
 func (c Controller) initSys() {
 	c.PrintLog(fmt.Sprintf("✨ Welcome to Chiko v%s", entity.APP_VERSION), LOG_INFO)
-
+	// Load bookmarks
+	c.loadBookmark()
 }
 
 func (c Controller) Run() error {

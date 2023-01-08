@@ -14,10 +14,11 @@ import (
 
 func (c Controller) applyBookmark() {
 	// Get selected connection
-	// selIndex := c.ui.BookmarkList.GetCurrentItem()
-	// selConn := c.bookmarks[selIndex]
-	// c.conn = selConn
-	// c.PrintLog(fmt.Sprintf("📚 bookmark applied: %s", c.conn.Name), LOG_INFO)
+	selIndex := c.ui.BookmarkList.GetCurrentItem()
+	selConn := *(c.bookmarks)
+	*c.conn = selConn[selIndex]
+
+	c.PrintLog(fmt.Sprintf("📚 bookmark applied: %s", c.conn.ServerURL), LOG_INFO)
 }
 
 func (c Controller) loadBookmark() {
@@ -45,9 +46,7 @@ func (c Controller) loadBookmark() {
 
 func (c Controller) saveBookmark(conn entity.Connection) {
 
-	c.PrintLog(fmt.Sprintf("%d", len(*c.bookmarks)), LOG_ERROR)
 	*c.bookmarks = append(*c.bookmarks, conn)
-	c.PrintLog(fmt.Sprintf("%d", len(*c.bookmarks)), LOG_ERROR)
 	c.ui.BookmarkList.AddItem(conn.Name, "", 0, c.applyBookmark)
 
 	// Save to file
@@ -67,6 +66,8 @@ func (c Controller) saveBookmark(conn entity.Connection) {
 func (c Controller) doSaveBookmark() {
 	conID := c.conn.ID
 
+	c.ShowMessageBox(" Overwrite Bookmark ", "Do you want to create new bookmark or overwrite existing bookmark?")
+	return
 	if conID == nil {
 		genID := uuid.New()
 		// Create Window
