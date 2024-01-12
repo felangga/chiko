@@ -45,6 +45,7 @@ func NewView() View {
 	outputPanel.SetDynamicColors(true)
 	outputPanel.SetTitle(" 📃 Output Logs ")
 	outputPanel.SetBorder(true)
+	outputPanel.SetWordWrap(true)
 	outputPanel.SetBorderPadding(1, 1, 1, 1)
 	outputPanel.SetScrollable(true).SetChangedFunc(func() {
 		app.Draw()

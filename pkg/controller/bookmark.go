@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"os"
 
 	"github.com/epiclabs-io/winman"
 	"github.com/gdamore/tcell/v2"
@@ -12,18 +13,24 @@ import (
 	"github.com/rivo/tview"
 )
 
+const BOOKMARKS_FILE_NAME = "bookmarks.cfg"
+
 func (c Controller) applyBookmark() {
 	// Get selected connection
 	selIndex := c.ui.BookmarkList.GetCurrentItem()
 	selConn := *(c.bookmarks)
 	*c.conn = selConn[selIndex]
 
-	c.PrintLog(fmt.Sprintf("📚 bookmark applied: %s", c.conn.ServerURL), LOG_INFO)
+	c.PrintLog(fmt.Sprintf("📚 bookmark loaded : %s", c.conn.ServerURL), LOG_INFO)
 }
 
 func (c Controller) loadBookmark() {
-	// Get selected connection
-	file, err := ioutil.ReadFile("bookmarks.cfg")
+	if _, err := os.Stat(BOOKMARKS_FILE_NAME); err != nil {
+		return
+	}
+
+	// Read bookmark file
+	file, err := ioutil.ReadFile(BOOKMARKS_FILE_NAME)
 	if err != nil {
 		c.PrintLog(err.Error(), LOG_INFO)
 		return
@@ -37,14 +44,14 @@ func (c Controller) loadBookmark() {
 
 	// Populate bookmarks list
 	for _, b := range *c.bookmarks {
-		c.ui.BookmarkList.AddItem(b.Name, "", 0, c.applyBookmark)
+		c.ui.BookmarkList.AddItem("📗 "+b.Name, "", 0, c.applyBookmark)
 	}
 
-	c.PrintLog(fmt.Sprintf("%d 📚 bookmarks loaded", len(*c.bookmarks)), LOG_INFO)
+	c.PrintLog(fmt.Sprintf("%d 📚 bookmark(s) loaded", len(*c.bookmarks)), LOG_INFO)
 
 }
 
-func (c Controller) saveBookmark(conn entity.Connection) {
+func (c Controller) saveBookmark(conn entity.Session) {
 
 	*c.bookmarks = append(*c.bookmarks, conn)
 	c.ui.BookmarkList.AddItem(conn.Name, "", 0, c.applyBookmark)
@@ -63,11 +70,15 @@ func (c Controller) saveBookmark(conn entity.Connection) {
 	}
 }
 
-func (c Controller) doSaveBookmark() {
+// DoSaveBookmark used to open the save bookmark dialog to save the current payload to bookmark
+func (c Controller) DoSaveBookmark() {
 	conID := c.conn.ID
 
-	c.ShowMessageBox(" Overwrite Bookmark ", "Do you want to create new bookmark or overwrite existing bookmark?")
-	return
+	c.ShowMessageBox(" Overwrite Bookmark ", "Do you want to create new bookmark or overwrite existing bookmark?", []Button{
+		{"Overwrite", nil},
+		{"Create New", nil},
+	})
+
 	if conID == nil {
 		genID := uuid.New()
 		// Create Window
@@ -100,7 +111,7 @@ func (c Controller) doSaveBookmark() {
 
 		wnd.SetRect(0, 0, 50, 1)
 		wnd.AddButton(&winman.Button{
-			Symbol: '❌',
+			Symbol: 'X',
 			OnClick: func() {
 				c.ui.WinMan.RemoveWindow(wnd)
 				c.ui.SetFocus(c.ui.MenuList)

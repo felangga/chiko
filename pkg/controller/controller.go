@@ -10,17 +10,17 @@ import (
 type Controller struct {
 	ctx       context.Context
 	ui        ui.View
-	conn      *entity.Connection
-	bookmarks *[]entity.Connection
+	conn      *entity.Session
+	bookmarks *[]entity.Session
 }
 
 func NewController() Controller {
 
 	ui := ui.NewView()
-	conn := entity.Connection{
+	conn := entity.Session{
 		ServerURL: "localhost:50051",
 	}
-	init := &[]entity.Connection{}
+	init := &[]entity.Session{}
 	c := Controller{
 		context.Background(),
 		ui,
@@ -33,6 +33,7 @@ func NewController() Controller {
 
 func (c Controller) initSys() {
 	c.PrintLog(fmt.Sprintf("✨ Welcome to Chiko v%s", entity.APP_VERSION), LOG_INFO)
+	
 	// Load bookmarks
 	c.loadBookmark()
 }

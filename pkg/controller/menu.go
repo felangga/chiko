@@ -13,17 +13,25 @@ import (
 )
 
 func (c Controller) initMenu() {
-	c.ui.MenuList.AddItem("Server URL", "", 'u', c.setServerURL)
-	c.ui.MenuList.AddItem("Method", "", 'm', c.setMethod)
-	c.ui.MenuList.AddItem("Authorization", "", 'a', nil)
-	c.ui.MenuList.AddItem("Metadata", "", 'd', nil)
-	c.ui.MenuList.AddItem("Request Payload", "", 'p', c.setRequestPayload)
-	c.ui.MenuList.AddItem("Invoke", "", 'i', c.doInvoke)
-	c.ui.MenuList.AddItem("------------------", "", 0, nil)
-	c.ui.MenuList.AddItem("Save to Bookmark", "", 'b', c.doSaveBookmark)
+	menuList := c.ui.MenuList
+	menuList.AddItem("Server URL", "", 'u', c.SetServerURL)
+	menuList.AddItem("Methods", "", 'm', c.SetRequestMethods)
+	menuList.AddItem("Authorization", "", 'a', c.SetAuthorizationModal)
+	menuList.AddItem("Metadata", "", 'd', nil)
+	menuList.AddItem("Request Payload", "", 'p', c.SetRequestPayload)
+	menuList.AddItem("Invoke", "", 'i', c.DoInvoke)
+	menuList.AddItem("------------------", "", 0, nil)
+	menuList.AddItem("Save to Bookmark", "", 'b', c.DoSaveBookmark)
+	menuList.AddItem("Quit", "", 'q', c.DoQuit)
 }
 
-func (c Controller) setServerURL() {
+// DoQuit used to do shut down sequence and quit the program
+func (c Controller) DoQuit() {
+	c.ui.App.Stop()
+}
+
+// SetServerURL used to show set server URL modal dialog
+func (c Controller) SetServerURL() {
 	// Create Set Server URL From
 	txtServerURL := tview.NewInputField().SetText(c.conn.ServerURL)
 	wnd := winman.NewWindow().
@@ -54,7 +62,7 @@ func (c Controller) setServerURL() {
 	wnd.SetModal(true)
 	wnd.SetRect(0, 0, 50, 1)
 	wnd.AddButton(&winman.Button{
-		Symbol: '❌',
+		Symbol: 'X',
 		OnClick: func() {
 			c.ui.WinMan.RemoveWindow(wnd)
 			c.ui.SetFocus(c.ui.MenuList)
@@ -66,7 +74,9 @@ func (c Controller) setServerURL() {
 	c.ui.SetFocus(wnd)
 }
 
-func (c Controller) setMethod() {
+// SetRequestMethods used to set the RPC request methods, it will show the available methods
+// if the server supports Server Reflection
+func (c Controller) SetRequestMethods() {
 	if c.conn.ActiveConnection == nil {
 		c.PrintLog("❗ no active connection", LOG_WARNING)
 		return
@@ -81,7 +91,7 @@ func (c Controller) setMethod() {
 		SetRoot(listMethods).
 		SetDraggable(true).
 		SetResizable(true).
-		SetTitle(" Select gRPC Method ")
+		SetTitle(" Select RPC Methods ")
 
 	wnd.SetBackgroundColor(tcell.GetColor(entity.SelectedTheme.Colors["WindowColor"]))
 	listMethods.SetBackgroundColor(wnd.GetBackgroundColor())
@@ -116,7 +126,7 @@ func (c Controller) setMethod() {
 	wnd.SetModal(true)
 	wnd.SetRect(0, 0, 70, 7)
 	wnd.AddButton(&winman.Button{
-		Symbol: '❌',
+		Symbol: 'X',
 		OnClick: func() {
 			c.ui.WinMan.RemoveWindow(wnd)
 			c.ui.SetFocus(c.ui.MenuList)
@@ -144,7 +154,74 @@ func (c Controller) setMethod() {
 	c.ui.SetFocus(wnd)
 }
 
-func (c Controller) setRequestPayload() {
+// SetAuthorizationModal used to show the authorization modal dialog
+func (c Controller) SetAuthorizationModal() {
+	// Create set authorization modal
+	var bearerToken string
+	if c.conn.Authorization != nil {
+		bearerToken = c.conn.Authorization.BearerToken.Token
+	}
+
+	txtAuthorization := tview.NewInputField().SetText(bearerToken)
+	wnd := winman.NewWindow().
+		Show().
+		SetRoot(txtAuthorization).
+		SetDraggable(true).
+		SetTitle("🔑 Authorization ")
+
+	wnd.SetBackgroundColor(tcell.GetColor(entity.SelectedTheme.Colors["WindowColor"]))
+	txtAuthorization.SetFieldBackgroundColor(wnd.GetBackgroundColor())
+
+	txtAuthorization.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		switch event.Key() {
+		case tcell.KeyEscape:
+			c.ui.WinMan.RemoveWindow(wnd)
+			c.ui.SetFocus(c.ui.MenuList)
+		case tcell.KeyEnter:
+			// Check if empty
+			if len(txtAuthorization.GetText()) < 1 {
+				c.conn.Authorization = nil
+				if len(bearerToken) > 0 {
+					c.PrintLog("🔓 Authorization removed", LOG_INFO)
+				}
+			} else {
+				auth := entity.Auth{
+					AuthType: entity.AuthTypeBearer,
+					BearerToken: &entity.AuthBearerToken{
+						Token: txtAuthorization.GetText(),
+					},
+				}
+
+				c.conn.Authorization = &auth
+
+				c.PrintLog(fmt.Sprintf("🔒 Authorization set [blue]%s", txtAuthorization.GetText()), LOG_INFO)
+			}
+
+			// Remove the window and restore focus to menu list
+			c.ui.WinMan.RemoveWindow(wnd)
+			c.ui.SetFocus(c.ui.MenuList)
+		}
+		return event
+	})
+
+	wnd.SetModal(true)
+	wnd.SetRect(0, 0, 50, 1)
+	wnd.AddButton(&winman.Button{
+		Symbol: 'X',
+		OnClick: func() {
+			c.ui.WinMan.RemoveWindow(wnd)
+			c.ui.SetFocus(c.ui.MenuList)
+		},
+	})
+
+	c.ui.WinMan.AddWindow(wnd)
+	c.ui.WinMan.Center(wnd)
+	c.ui.SetFocus(wnd)
+}
+
+// SetRequestPayload used to set the request payload and also user can generate the sample payload if the Server
+// Reflection is supported
+func (c Controller) SetRequestPayload() {
 	if c.conn.ActiveConnection == nil {
 		c.PrintLog("❗ no active connection", LOG_WARNING)
 		return
@@ -173,7 +250,7 @@ func (c Controller) setRequestPayload() {
 
 	form.AddButton("Generate Sample", func() {
 		if c.conn.SelectedMethod == nil {
-			c.PrintLog("please select grpc method first", LOG_ERROR)
+			c.PrintLog("please select rpc method first", LOG_ERROR)
 			return
 		}
 		// Get service detail
