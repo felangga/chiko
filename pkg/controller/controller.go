@@ -33,13 +33,13 @@ func NewController() Controller {
 
 func (c Controller) initSys() {
 	c.PrintLog(fmt.Sprintf("✨ Welcome to Chiko v%s", entity.APP_VERSION), LOG_INFO)
-	
+
 	// Load bookmarks
 	c.loadBookmark()
 }
 
 func (c Controller) Run() error {
-	c.initMenu()
+	c.InitMenu()
 
 	c.initSys()
 

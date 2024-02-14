@@ -12,7 +12,12 @@ import (
 	"github.com/rivo/tview"
 )
 
-func (c Controller) initMenu() {
+func (c Controller) AddMenuSection(name string) {
+	c.ui.MenuList.AddItem("[::d]"+name, "", 0, nil)
+	c.ui.MenuList.AddItem("[::d]"+strings.Repeat(string(tcell.RuneHLine), 25), "", 0, nil)
+}
+
+func (c Controller) InitMenu() {
 	menuList := c.ui.MenuList
 	menuList.AddItem("Server URL", "", 'u', c.SetServerURL)
 	menuList.AddItem("Methods", "", 'm', c.SetRequestMethods)
@@ -20,7 +25,7 @@ func (c Controller) initMenu() {
 	menuList.AddItem("Metadata", "", 'd', nil)
 	menuList.AddItem("Request Payload", "", 'p', c.SetRequestPayload)
 	menuList.AddItem("Invoke", "", 'i', c.DoInvoke)
-	menuList.AddItem("------------------", "", 0, nil)
+	menuList.AddItem("[::d]"+strings.Repeat(string(tcell.RuneHLine), 25), "", 0, nil)
 	menuList.AddItem("Save to Bookmark", "", 'b', c.DoSaveBookmark)
 	menuList.AddItem("Quit", "", 'q', c.DoQuit)
 }
