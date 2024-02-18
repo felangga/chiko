@@ -1,7 +1,10 @@
 package controller
 
 import (
+	"fmt"
+
 	"github.com/epiclabs-io/winman"
+	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
 
@@ -10,22 +13,23 @@ type Button struct {
 	OnClick func()
 }
 
+// ShowMessageBox is used to show message box with fixed size 50x11
 func (c Controller) ShowMessageBox(title, message string, buttons []Button) {
 	// Message box content
 	root := tview.NewForm()
-	root.SetRect(0, 0, 20, 20)
-	// root.SetDirection(tview.NewGrid())
-
 	txtMessage := tview.NewTextView()
-	txtMessage.SetWordWrap(true)
-	txtMessage.SetLabel(message)
+	fmt.Fprint(txtMessage, message)
 	root.AddFormItem(txtMessage)
 
-	// Populate button
+	// Populate buttons
 	for _, button := range buttons {
+
 		root.AddButton(button.Name, button.OnClick)
 	}
+
 	root.SetButtonsAlign(tview.AlignCenter)
+	root.SetButtonBackgroundColor(tcell.GetColor(c.theme.Colors["ButtonColor"]))
+	root.SetBackgroundColor(tcell.GetColor(c.theme.Colors["ModalColor"]))
 
 	wnd := winman.NewWindow().
 		Show().
@@ -35,13 +39,27 @@ func (c Controller) ShowMessageBox(title, message string, buttons []Button) {
 		SetTitle(title)
 
 	wnd.SetModal(true)
-	wnd.SetRect(0, 0, 50, 20)
 	wnd.AddButton(&winman.Button{
 		Symbol: 'X',
 		OnClick: func() {
 			c.ui.WinMan.RemoveWindow(wnd)
 			c.ui.SetFocus(c.ui.MenuList)
 		},
+	})
+
+	// TODO: need to create auto-sized window to accomodate long message text
+	wnd.SetRect(0, 0, 50, 11)
+	wnd.SetResizable(false)
+	wnd.SetBackgroundColor(tcell.GetColor(c.theme.Colors["ModalColor"]))
+
+	// Handle keypress on window
+	root.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		switch event.Key() {
+		case tcell.KeyEscape:
+			c.ui.WinMan.RemoveWindow(wnd)
+			c.ui.SetFocus(c.ui.MenuList)
+		}
+		return event
 	})
 
 	c.ui.WinMan.AddWindow(wnd)

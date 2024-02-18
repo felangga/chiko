@@ -3,10 +3,8 @@ package ui
 import (
 	"chiko/pkg/entity"
 	"fmt"
-	"strconv"
 
 	"github.com/epiclabs-io/winman"
-	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
 
@@ -40,12 +38,10 @@ func NewView() View {
 	menuList := tview.NewList().ShowSecondaryText(false)
 	menuList.SetBorder(true).SetTitle(" 🐶 Menu ")
 	menuList.SetBorderPadding(1, 1, 1, 1)
-	pages.AddPage("1", menuList, false, true)
 
 	bookmarkList := tview.NewList().ShowSecondaryText(false)
 	bookmarkList.SetBorder(true).SetTitle(" 📚 Bookmarks ")
 	bookmarkList.SetBorderPadding(1, 1, 1, 1)
-	pages.AddPage("2", bookmarkList, false, true)
 
 	outputPanel := tview.NewTextView()
 	outputPanel.SetDynamicColors(true)
@@ -56,7 +52,6 @@ func NewView() View {
 	outputPanel.SetScrollable(true).SetChangedFunc(func() {
 		app.Draw()
 	})
-	pages.AddPage("3", outputPanel, false, true)
 
 	// Setup the main layout
 	splitSidebar := tview.NewFlex().SetDirection(tview.FlexRow).
@@ -77,19 +72,7 @@ func NewView() View {
 		SetBorder(false)
 
 	window.Maximize()
-
-	// pages.AddPage("background", window, true, true)
-
-	app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		switch event.Key() {
-		case tcell.KeyTab:
-			nextPage, _ := strconv.ParseInt(pages.GetTitle(), 10, 64)
-			pages.SwitchToPage(fmt.Sprintf("%d", (int(nextPage)+1)%pages.GetPageCount()))
-		}
-		return event
-	})
-
-	app.SetRoot(pages, true)
+	app.SetRoot(wm, true)
 
 	v := View{
 		app,
@@ -100,5 +83,6 @@ func NewView() View {
 		outputPanel,
 		wm,
 	}
+
 	return v
 }

@@ -12,12 +12,14 @@ type Controller struct {
 	ui        ui.View
 	conn      *entity.Session
 	bookmarks *[]entity.Session
+	theme     entity.Theme
 }
 
 func NewController() Controller {
 
 	ui := ui.NewView()
 	conn := entity.Session{
+		// Default server URL
 		ServerURL: "localhost:50051",
 	}
 	init := &[]entity.Session{}
@@ -26,6 +28,7 @@ func NewController() Controller {
 		ui,
 		&conn,
 		init,
+		entity.SelectedTheme,
 	}
 
 	return c
@@ -35,7 +38,7 @@ func (c Controller) initSys() {
 	c.PrintLog(fmt.Sprintf("✨ Welcome to Chiko v%s", entity.APP_VERSION), LOG_INFO)
 
 	// Load bookmarks
-	c.loadBookmark()
+	c.loadBookmarks()
 }
 
 func (c Controller) Run() error {

@@ -13,7 +13,7 @@ type Session struct {
 	Authorization     *Auth                    `json:"authorization"`
 	ActiveConnection  *grpc.ClientConn         `json:"-"`
 	AvailableServices []string                 `json:"-"`
-	SelectedMethod    *string                  `json:"-"`
+	SelectedMethod    *string                  `json:"selected_method"`
 	AvailableMethods  []string                 `json:"-"`
 	RequestPayload    string                   `json:"request_payload"`
 	DescriptorSource  grpcurl.DescriptorSource `json:"-"`

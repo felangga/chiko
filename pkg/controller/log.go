@@ -23,6 +23,9 @@ func (c Controller) PrintLog(log string, logType LogType) {
 	case LOG_WARNING:
 		warnaLog = "yellow"
 	}
-	formatLog := fmt.Sprintf("[green][%s] [%s]%s [white]", time.Now().Format(time.RFC822), warnaLog, log)
+	formatLog := fmt.Sprintf("[green][%s] [%s]%s [white]\n", time.Now().Format(time.RFC822), warnaLog, log)
 	c.ui.OutputPanel.SetWordWrap(true).SetText(lastLog + formatLog)
+
+	// Scroll log window to bottom
+	c.ui.OutputPanel.ScrollToEnd()
 }

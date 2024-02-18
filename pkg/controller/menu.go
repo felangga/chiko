@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"chiko/pkg/entity"
 	"fmt"
 	"strings"
 
@@ -10,6 +9,8 @@ import (
 	"github.com/gdamore/tcell/v2"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/rivo/tview"
+
+	"chiko/pkg/entity"
 )
 
 func (c Controller) AddMenuSection(name string) {
@@ -232,6 +233,11 @@ func (c Controller) SetRequestPayload() {
 		return
 	}
 
+	if c.conn.SelectedMethod == nil {
+		c.PrintLog("❗ please select rpc method first", LOG_ERROR)
+		return
+	}
+
 	requestPayload := c.conn.RequestPayload
 
 	// Create Set Server URL From
@@ -242,7 +248,7 @@ func (c Controller) SetRequestPayload() {
 		SetTitle(" Request Payload ").
 		SetDraggable(true)
 
-	wnd.SetBackgroundColor(tcell.GetColor(entity.SelectedTheme.Colors["WindowColor"]))
+	wnd.SetBackgroundColor(tcell.GetColor(c.theme.Colors["WindowColor"]))
 	form.SetBackgroundColor(wnd.GetBackgroundColor())
 
 	form.SetBorderPadding(1, 1, 0, 1)
@@ -250,14 +256,12 @@ func (c Controller) SetRequestPayload() {
 	// Create text area for filling the payload
 	txtPayload := tview.NewTextArea().SetText(requestPayload, true)
 	txtPayload.SetSize(9, 100)
-	txtPayload.SetTextStyle(tcell.StyleDefault.Background(tcell.Color100).Foreground(tcell.Color102))
+	form.SetFieldBackgroundColor(tcell.GetColor(c.theme.Colors["FieldColor"]))
 	form.AddFormItem(txtPayload)
 
+	// Populate Buttons
 	form.AddButton("Generate Sample", func() {
-		if c.conn.SelectedMethod == nil {
-			c.PrintLog("please select rpc method first", LOG_ERROR)
-			return
-		}
+
 		// Get service detail
 		dsc, err := c.conn.DescriptorSource.FindSymbol(*c.conn.SelectedMethod)
 		if err != nil {
@@ -311,7 +315,7 @@ func (c Controller) SetRequestPayload() {
 		}
 	})
 
-	form.AddButton("Set", func() {
+	form.AddButton("Apply", func() {
 		c.conn.RequestPayload = txtPayload.GetText()
 
 		// Remove the window and restore focus to menu list
@@ -320,15 +324,19 @@ func (c Controller) SetRequestPayload() {
 		c.ui.SetFocus(c.ui.MenuList)
 	})
 
-	form.AddButton("Cancel", func() {
-		// Remove the window and restore focus to menu list
-		c.ui.WinMan.RemoveWindow(wnd)
-		c.ui.SetFocus(c.ui.MenuList)
-	})
 	form.SetButtonsAlign(tview.AlignRight)
+
+	form.SetButtonBackgroundColor(tcell.GetColor(c.theme.Colors["ButtonColor"]))
 
 	wnd.SetModal(true)
 	wnd.SetRect(0, 0, 70, 15)
+	wnd.AddButton(&winman.Button{
+		Symbol: 'X',
+		OnClick: func() {
+			c.ui.WinMan.RemoveWindow(wnd)
+			c.ui.SetFocus(c.ui.MenuList)
+		},
+	})
 
 	c.ui.WinMan.AddWindow(wnd)
 	c.ui.WinMan.Center(wnd)
