@@ -193,7 +193,7 @@ func (c Controller) SetAuthorizationModal() {
 			} else {
 				auth := entity.Auth{
 					AuthType: entity.AuthTypeBearer,
-					BearerToken: &entity.AuthBearerToken{
+					BearerToken: &entity.AuthValueBearerToken{
 						Token: txtAuthorization.GetText(),
 					},
 				}
@@ -211,7 +211,7 @@ func (c Controller) SetAuthorizationModal() {
 	})
 
 	wnd.SetModal(true)
-	wnd.SetRect(0, 0, 50, 1)
+	wnd.SetRect(0, 0, 100, 1)
 	wnd.AddButton(&winman.Button{
 		Symbol: 'X',
 		OnClick: func() {

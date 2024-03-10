@@ -61,7 +61,6 @@ func (c Controller) parseRequestResponse(text string) [][]string {
 	return re.FindAllStringSubmatch(text, -1)
 }
 
-
 // DoInvoke will invoke the configured payload and try to hit the server with it
 func (c Controller) DoInvoke() {
 	if c.conn.ActiveConnection == nil {
@@ -82,10 +81,7 @@ func (c Controller) DoInvoke() {
 		controller: c,
 	}
 
-	// Prepare authentication
-	// grpcurl.ExpandHeaders()
-
-	err = grpcurl.InvokeRPC(c.ctx, c.conn.DescriptorSource, c.conn.ActiveConnection, *c.conn.SelectedMethod, nil, h, rf.Next)
+	err = grpcurl.InvokeRPC(c.ctx, c.conn.DescriptorSource, c.conn.ActiveConnection, *c.conn.SelectedMethod, c.conn.ParseMetadata(), h, rf.Next)
 	if err != nil {
 		if errStatus, ok := status.FromError(err); ok {
 			h.respStatus = errStatus

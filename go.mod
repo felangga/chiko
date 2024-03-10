@@ -6,6 +6,7 @@ require (
 	github.com/epiclabs-io/winman v0.0.0-20220901164457-3d8c4b3ae090
 	github.com/fullstorydev/grpcurl v1.8.9
 	github.com/golang/protobuf v1.5.3
+	github.com/google/go-cmp v0.6.0
 	github.com/jhump/protoreflect v1.15.4
 	github.com/rivo/tview v0.0.0-20240101144852-b3bd1aa5e9f2
 	google.golang.org/grpc v1.60.1
@@ -13,7 +14,6 @@ require (
 
 require (
 	github.com/bufbuild/protocompile v0.7.1 // indirect
-	github.com/gdamore/tcell v1.4.0 // indirect
 	golang.org/x/net v0.20.0 // indirect
 	golang.org/x/sync v0.6.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240108191215-35c7eff3a6b1 // indirect
