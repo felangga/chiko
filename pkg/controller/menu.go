@@ -130,7 +130,7 @@ func (c Controller) SetRequestMethods() {
 	})
 
 	wnd.SetModal(true)
-	wnd.SetRect(0, 0, 70, 7)
+	wnd.SetRect(0, 0, 100, 7)
 	wnd.AddButton(&winman.Button{
 		Symbol: 'X',
 		OnClick: func() {

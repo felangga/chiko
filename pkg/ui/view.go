@@ -13,7 +13,7 @@ type View struct {
 	Pages        *tview.Pages
 	MainLayout   *tview.Flex
 	MenuList     *tview.List
-	BookmarkList *tview.List
+	BookmarkList *tview.TreeView
 	OutputPanel  *tview.TextView
 	WinMan       *winman.Manager
 }
@@ -39,9 +39,13 @@ func NewView() View {
 	menuList.SetBorder(true).SetTitle(" 🐶 Menu ")
 	menuList.SetBorderPadding(1, 1, 1, 1)
 
-	bookmarkList := tview.NewList().ShowSecondaryText(false)
-	bookmarkList.SetBorder(true).SetTitle(" 📚 Bookmarks ")
-	bookmarkList.SetBorderPadding(1, 1, 1, 1)
+	// Initialize the bookmarks tree view
+	root := tview.NewTreeNode("📚 Library")
+	bookmarkList := tview.NewTreeView().
+		SetRoot(root).
+		SetCurrentNode(root)
+
+	bookmarkList.SetBorder(true).SetTitle(" 📚 Bookmarks Library ").SetBorderPadding(1, 1, 1, 1)
 
 	outputPanel := tview.NewTextView()
 	outputPanel.SetDynamicColors(true)

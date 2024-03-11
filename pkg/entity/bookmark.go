@@ -1,5 +1,9 @@
 package entity
 
-var Bookmarks []Session
+// Bookmarks configuration file
+const BOOKMARKS_FILE_NAME = ".bookmarks"
 
-const BOOKMARKS_FILE_NAME = "bookmarks.cfg"
+type Bookmark struct {
+	CategoryName string    `json:"category_name"`
+	Sessions     []Session `json:"sessions"`
+}

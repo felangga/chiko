@@ -5,6 +5,7 @@ go 1.20
 require (
 	github.com/epiclabs-io/winman v0.0.0-20220901164457-3d8c4b3ae090
 	github.com/fullstorydev/grpcurl v1.8.9
+	github.com/gdamore/tcell v1.4.0
 	github.com/golang/protobuf v1.5.3
 	github.com/google/go-cmp v0.6.0
 	github.com/jhump/protoreflect v1.15.4
