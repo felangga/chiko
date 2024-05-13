@@ -13,6 +13,7 @@ const (
 	LOG_WARNING LogType = 2
 )
 
+// PrintLog used to print log text to log window on main screen
 func (c Controller) PrintLog(log string, logType LogType) {
 	// Get last log message
 	lastLog := c.ui.OutputPanel.GetText(false)

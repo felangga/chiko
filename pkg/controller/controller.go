@@ -1,12 +1,13 @@
 package controller
 
 import (
-	"chiko/pkg/entity"
-	"chiko/pkg/ui"
 	"context"
 	"fmt"
 
 	"github.com/rivo/tview"
+
+	"chiko/pkg/entity"
+	"chiko/pkg/ui"
 )
 
 type Controller struct {

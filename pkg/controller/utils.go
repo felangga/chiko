@@ -23,7 +23,6 @@ func (c Controller) ShowMessageBox(title, message string, buttons []Button) {
 
 	// Populate buttons
 	for _, button := range buttons {
-
 		root.AddButton(button.Name, button.OnClick)
 	}
 

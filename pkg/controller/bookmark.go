@@ -13,12 +13,14 @@ import (
 	"chiko/pkg/entity"
 )
 
+// ApplyBookmark used to load the selected bookmark to current session
 func (c Controller) ApplyBookmark(session entity.Session) {
 	// Get selected connection
 	*c.conn = session
 
 	c.PrintLog(fmt.Sprintf("📚 Bookmark loaded : %s", c.conn.ServerURL), LOG_INFO)
 
+	// Check the session if supported server reflection
 	go c.CheckGRPC(c.conn.ServerURL)
 }
 
