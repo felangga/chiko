@@ -87,7 +87,7 @@ func NewView() View {
 		AddItem(bookmarkList, 0, 1, false)
 
 	childLayout := tview.NewFlex().SetDirection(tview.FlexColumn).
-		AddItem(splitSidebar, 30, 1, true).
+		AddItem(splitSidebar, 35, 1, true).
 		AddItem(outputPanel, 0, 4, false)
 
 	mainLayout := tview.NewFlex().SetDirection(tview.FlexRow).

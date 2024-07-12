@@ -305,8 +305,8 @@ func (c Controller) SetAuthorizationModal() {
 	c.ui.SetFocus(wnd)
 }
 
-// SetRequestPayload used to set the request payload and also user can generate the sample payload if the Server
-// Reflection is supported
+// SetRequestPayload used to set the request payload and also user can generate the sample payload if the
+// Server Reflection is supported
 func (c Controller) SetRequestPayload() {
 	if c.conn.ActiveConnection == nil {
 		c.PrintLog("❗ no active connection", LOG_WARNING)
@@ -329,8 +329,8 @@ func (c Controller) SetRequestPayload() {
 		SetDraggable(true)
 
 	wnd.SetBackgroundColor(c.theme.Colors.WindowColor)
-	form.SetBackgroundColor(wnd.GetBackgroundColor())
 
+	form.SetBackgroundColor(c.theme.Colors.WindowColor)
 	form.SetBorderPadding(1, 1, 0, 1)
 
 	// Create text area for filling the payload
@@ -338,6 +338,15 @@ func (c Controller) SetRequestPayload() {
 	txtPayload.SetSize(9, 100)
 	form.SetFieldBackgroundColor(c.theme.Colors.FieldColor)
 	form.AddFormItem(txtPayload)
+	form.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		switch event.Key() {
+		case tcell.KeyEscape:
+			c.ui.WinMan.RemoveWindow(wnd)
+			c.ui.SetFocus(c.ui.MenuList)
+			return nil
+		}
+		return event
+	})
 
 	// Populate Buttons
 	form.AddButton("Generate Sample", func() {
