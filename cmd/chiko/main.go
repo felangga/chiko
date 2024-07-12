@@ -1,9 +1,19 @@
 package main
 
 import (
-	"chiko/pkg/controller"
+	"chiko/pkg/ui"
+	"fmt"
 )
 
 func main() {
-	controller.NewController().Run()
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Println("Recovered from panic:", r)
+		}
+	}()
+
+	err := ui.NewUI().Run()
+	if err != nil {
+		panic(err)
+	}
 }
