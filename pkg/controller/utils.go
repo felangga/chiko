@@ -23,13 +23,12 @@ func (c Controller) ShowMessageBox(title, message string, buttons []Button) {
 
 	// Populate buttons
 	for _, button := range buttons {
-
 		root.AddButton(button.Name, button.OnClick)
 	}
 
 	root.SetButtonsAlign(tview.AlignCenter)
-	root.SetButtonBackgroundColor(tcell.GetColor(c.theme.Colors["ButtonColor"]))
-	root.SetBackgroundColor(tcell.GetColor(c.theme.Colors["ModalColor"]))
+	root.SetButtonBackgroundColor(c.theme.Colors.ButtonColor)
+	root.SetBackgroundColor(c.theme.Colors.ModalColor)
 
 	wnd := winman.NewWindow().
 		Show().
@@ -50,7 +49,7 @@ func (c Controller) ShowMessageBox(title, message string, buttons []Button) {
 	// TODO: need to create auto-sized window to accomodate long message text
 	wnd.SetRect(0, 0, 50, 11)
 	wnd.SetResizable(false)
-	wnd.SetBackgroundColor(tcell.GetColor(c.theme.Colors["ModalColor"]))
+	wnd.SetBackgroundColor(c.theme.Colors.ModalColor)
 
 	// Handle keypress on window
 	root.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {

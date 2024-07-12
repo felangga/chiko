@@ -13,7 +13,7 @@ import (
 	"chiko/pkg/entity"
 )
 
-func (c Controller) ApplyBookmark(session entity.Session) {
+func (c Controller) applyBookmark(session entity.Session) {
 	// Get selected connection
 	*c.conn = session
 
@@ -82,6 +82,7 @@ func (c Controller) ShowBookmarkCategoryModal(onSelectedCategory func(wnd winman
 
 	wnd := winman.NewWindow().
 		Show().
+		SetModal(true).
 		SetRoot(list).
 		SetDraggable(true).
 		SetTitle(" 📚 Select Bookmark Category ")
@@ -90,19 +91,19 @@ func (c Controller) ShowBookmarkCategoryModal(onSelectedCategory func(wnd winman
 
 	createCategoryModal := func() {
 		catName := tview.NewInputField().SetText(c.conn.Name)
-		catWnd := winman.NewWindow().
+		mdlNewCategory := winman.NewWindow().
+			SetModal(true).
 			Show().
 			SetRoot(catName).
 			SetDraggable(true).
 			SetTitle(" ✏️ Enter New Category Name ")
 
-		catWnd.SetBackgroundColor(tcell.GetColor(entity.SelectedTheme.Colors["WindowColor"]))
+		mdlNewCategory.SetBackgroundColor(c.theme.Colors.WindowColor)
 		catName.SetFieldBackgroundColor(wnd.GetBackgroundColor())
-
 		catName.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 			switch event.Key() {
 			case tcell.KeyEscape:
-				c.ui.WinMan.RemoveWindow(wnd)
+				c.ui.WinMan.RemoveWindow(mdlNewCategory)
 				c.ui.SetFocus(wnd)
 			case tcell.KeyEnter:
 				// Add new category to bookmark list
@@ -112,26 +113,30 @@ func (c Controller) ShowBookmarkCategoryModal(onSelectedCategory func(wnd winman
 				}
 				*c.bookmarks = append(*c.bookmarks, newCategory)
 
+				list.AddItem("📁 "+newCategory.CategoryName, "", 0, func() {
+					onSelectedCategory(wnd, &newCategory)
+				})
 				// Remove the window and restore focus to previous window
-				c.ui.WinMan.RemoveWindow(catWnd)
+				c.ui.WinMan.RemoveWindow(mdlNewCategory)
 				c.ui.SetFocus(wnd)
 			}
 			return event
 		})
 
-		catWnd.SetRect(0, 0, 50, 1)
-		catWnd.AddButton(&winman.Button{
+		mdlNewCategory.SetRect(0, 0, 50, 1)
+		mdlNewCategory.AddButton(&winman.Button{
 			Symbol: 'X',
 			OnClick: func() {
-				c.ui.WinMan.RemoveWindow(catWnd)
-				c.ui.SetFocus(c.ui.MenuList)
+				c.ui.WinMan.RemoveWindow(mdlNewCategory)
+				c.ui.SetFocus(wnd)
 			},
 		})
 
-		c.ui.WinMan.AddWindow(catWnd)
-		c.ui.WinMan.Center(catWnd)
-		c.ui.SetFocus(catWnd)
+		c.ui.WinMan.AddWindow(mdlNewCategory)
+		c.ui.WinMan.Center(mdlNewCategory)
+		c.ui.SetFocus(mdlNewCategory)
 	}
+
 	// If user wants to create a new category
 	list.AddItem("📖 Create New Category", "", 0, createCategoryModal)
 
@@ -178,7 +183,7 @@ func (c Controller) ShowBookmarkNameModal(parentWND winman.Window, onEnter func(
 		SetDraggable(true).
 		SetTitle(" ✏️ Enter Bookmark Name ")
 
-	wnd.SetBackgroundColor(tcell.GetColor(entity.SelectedTheme.Colors["WindowColor"]))
+	wnd.SetBackgroundColor(c.theme.Colors.WindowColor)
 	bookmarkName.SetFieldBackgroundColor(wnd.GetBackgroundColor())
 
 	bookmarkName.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
@@ -191,12 +196,12 @@ func (c Controller) ShowBookmarkNameModal(parentWND winman.Window, onEnter func(
 
 			// Remove the window and restore focus to menu list
 			c.ui.WinMan.RemoveWindow(wnd)
-			c.ui.SetFocus(parentWND)
+			c.ui.SetFocus(c.ui.MenuList)
 		}
 		return event
 	})
 
-	wnd.SetRect(0, 0, 50, 1)
+	wnd.SetRect(0, 0, 80, 1)
 	wnd.AddButton(&winman.Button{
 		Symbol: 'X',
 		OnClick: func() {
@@ -214,15 +219,16 @@ func (c Controller) ShowBookmarkNameModal(parentWND winman.Window, onEnter func(
 func (c Controller) DoSaveBookmark() {
 	// Initiate saving bookmark sequence
 	c.ShowBookmarkCategoryModal(func(wnd winman.Window, b *entity.Bookmark) {
-
 		c.ShowBookmarkNameModal(wnd, func(bookmarkName string) {
 			genID := uuid.New()
 			c.conn.ID = &genID
 			c.conn.Name = bookmarkName
 			b.Sessions = append(b.Sessions, *c.conn)
-			fmt.Printf("%+v\n", c.bookmarks)
+
 			c.SaveBookmark()
 		})
+
+		c.ui.WinMan.RemoveWindow(wnd)
 	})
 }
 
@@ -237,13 +243,12 @@ func (c Controller) ShowBookmarkOptionsModal(parentWnd tview.Primitive, b entity
 		SetResizable(false).
 		SetTitle(" 📚 Bookmark Options ")
 
-	wnd.SetBackgroundColor(tcell.GetColor(entity.SelectedTheme.Colors["WindowColor"]))
+	wnd.SetBackgroundColor(c.theme.Colors.WindowColor)
 	listOptions.SetBackgroundColor(wnd.GetBackgroundColor())
 
 	// Load bookmark to the current session
 	listOptions.AddItem("Load Bookmark", "", 'a', func() {
-
-		c.ApplyBookmark(b)
+		c.applyBookmark(b)
 
 		// Close the window
 		c.ui.WinMan.RemoveWindow(wnd)
@@ -254,9 +259,13 @@ func (c Controller) ShowBookmarkOptionsModal(parentWnd tview.Primitive, b entity
 	listOptions.AddItem("Overwrite Bookmark", "", 'o', func() {
 		// c.overwriteBookmark(index)
 	})
-	listOptions.AddItem("Edit Bookmark", "", 'e', func() {
-	})
+
 	listOptions.AddItem("Delete Bookmark", "", 'd', func() {
+		c.deleteBookmark(b)
+
+		// Close the window
+		c.ui.WinMan.RemoveWindow(wnd)
+		c.ui.SetFocus(parentWnd)
 	})
 
 	listOptions.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
@@ -284,4 +293,29 @@ func (c Controller) ShowBookmarkOptionsModal(parentWnd tview.Primitive, b entity
 	c.ui.WinMan.AddWindow(wnd)
 	c.ui.WinMan.Center(wnd)
 	c.ui.SetFocus(wnd)
+}
+
+func (c Controller) deleteBookmark(b entity.Session) {
+	// Helper function to remove a session from a bookmark
+	removeSession := func(sessions []entity.Session, sessionID *uuid.UUID) []entity.Session {
+		for i, session := range sessions {
+			if session.ID == sessionID {
+				return append(sessions[:i], sessions[i+1:]...)
+			}
+		}
+		return sessions
+	}
+
+	for i, bookmark := range *c.bookmarks {
+		updatedSessions := removeSession(bookmark.Sessions, b.ID)
+		if len(updatedSessions) != len(bookmark.Sessions) {
+			bookmark.Sessions = updatedSessions
+			if len(bookmark.Sessions) == 0 {
+				*c.bookmarks = append((*c.bookmarks)[:i], (*c.bookmarks)[i+1:]...)
+			}
+			c.SaveBookmark()
+			c.PrintLog("🗑️ Bookmark deleted", LOG_INFO)
+			return
+		}
+	}
 }

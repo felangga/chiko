@@ -43,6 +43,7 @@ func (c Controller) CheckGRPC(serverURL string) {
 	}
 	c.conn.DescriptorSource = reflSource
 	c.PrintLog("🤩 this server support server reflection", LOG_INFO)
+	
 	c.conn.AvailableMethods = []string{} // Reset available methods
 	for _, svc := range svcs {
 		c.conn.AvailableServices = append(c.conn.AvailableServices, svc)

@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/epiclabs-io/winman"
+	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
 
@@ -55,6 +56,29 @@ func NewView() View {
 	outputPanel.SetBorderPadding(1, 1, 1, 1)
 	outputPanel.SetScrollable(true).SetChangedFunc(func() {
 		app.Draw()
+	})
+
+	// Handle keypress on menu list
+	menuList.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		switch event.Key() {
+		case tcell.KeyTAB:
+			app.SetFocus(bookmarkList)
+		}
+		return event
+	})
+	bookmarkList.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		switch event.Key() {
+		case tcell.KeyTAB:
+			app.SetFocus(outputPanel)
+		}
+		return event
+	})
+	outputPanel.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		switch event.Key() {
+		case tcell.KeyTAB:
+			app.SetFocus(menuList)
+		}
+		return event
 	})
 
 	// Setup the main layout

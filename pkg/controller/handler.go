@@ -38,7 +38,7 @@ func (h *handler) OnReceiveResponse(msg proto.Message) {
 	jsm := jsonpb.Marshaler{Indent: "  "}
 	respStr, err := jsm.MarshalToString(msg)
 	if err != nil {
-		panic(fmt.Errorf("failed to generate JSON form of response message: %v", err))
+		h.controller.PrintLog(fmt.Sprintf("failed to generate JSON form of response message: %v", err), LOG_ERROR)
 	}
 	h.respMessages = append(h.respMessages, respStr)
 	output := fmt.Sprintf("\n%s\n\n%s\n[yellow]%s", headerResp, statusCode, respStr)

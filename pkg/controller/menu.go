@@ -8,6 +8,7 @@ import (
 	"github.com/fullstorydev/grpcurl"
 	"github.com/gdamore/tcell/v2"
 	"github.com/jhump/protoreflect/desc"
+	"github.com/lithammer/fuzzysearch/fuzzy"
 	"github.com/rivo/tview"
 
 	"chiko/pkg/entity"
@@ -33,6 +34,14 @@ func (c Controller) InitMenu() {
 
 // DoQuit used to do shut down sequence and quit the program
 func (c Controller) DoQuit() {
+	// Close active connection if we are going to close the application
+	if (c.conn != nil) && (c.conn.ActiveConnection != nil) {
+		err := c.conn.ActiveConnection.Close()
+		if err != nil {
+			c.PrintLog(err.Error(), LOG_ERROR)
+		}
+	}
+
 	c.ui.App.Stop()
 }
 
@@ -46,7 +55,7 @@ func (c Controller) SetServerURL() {
 		SetDraggable(true).
 		SetTitle("🌏 Enter Server URL ")
 
-	wnd.SetBackgroundColor(tcell.GetColor(entity.SelectedTheme.Colors["WindowColor"]))
+	wnd.SetBackgroundColor(c.theme.Colors.WindowColor)
 	txtServerURL.SetFieldBackgroundColor(wnd.GetBackgroundColor())
 
 	txtServerURL.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
@@ -66,7 +75,7 @@ func (c Controller) SetServerURL() {
 	})
 
 	wnd.SetModal(true)
-	wnd.SetRect(0, 0, 50, 1)
+	wnd.SetRect(0, 0, 70, 1)
 	wnd.AddButton(&winman.Button{
 		Symbol: 'X',
 		OnClick: func() {
@@ -83,35 +92,71 @@ func (c Controller) SetServerURL() {
 // SetRequestMethods used to set the RPC request methods, it will show the available methods
 // if the server supports Server Reflection
 func (c Controller) SetRequestMethods() {
-	if c.conn.ActiveConnection == nil {
-		c.PrintLog("❗ no active connection", LOG_WARNING)
-		return
-	}
+	// if c.conn.ActiveConnection == nil {
+	// 	c.PrintLog("❗ no active connection", LOG_WARNING)
+	// 	return
+	// }
 
 	// Create Set Server URL From
+	// Set placeholder text and style
+	style := tcell.StyleDefault.
+		Background(c.theme.Colors.PlaceholderColor).
+		Italic(true)
+
 	listMethods := tview.NewList().
 		ShowSecondaryText(false)
+	listMethods.SetBorderPadding(1, 0, 0, 0)
+	listMethods.SetBackgroundColor(c.theme.Colors.WindowColor)
+
+	inpMethods := tview.NewInputField().
+		SetText("").
+		SetPlaceholder(" 🔍 Search methods...").
+		SetPlaceholderStyle(style)
+
+	inpMethods.SetFieldBackgroundColor(c.theme.Colors.PlaceholderColor)
+
+	wndLayer := tview.NewFlex()
+	wndLayer.SetDirection(tview.FlexRow)
+	wndLayer.AddItem(inpMethods, 1, 1, true)
+	wndLayer.AddItem(listMethods, 0, 1, false)
 
 	wnd := winman.NewWindow().
 		Show().
-		SetRoot(listMethods).
+		SetRoot(wndLayer).
 		SetDraggable(true).
 		SetResizable(true).
 		SetTitle(" Select RPC Methods ")
 
-	wnd.SetBackgroundColor(tcell.GetColor(entity.SelectedTheme.Colors["WindowColor"]))
-	listMethods.SetBackgroundColor(wnd.GetBackgroundColor())
+	wnd.SetBackgroundColor(c.theme.Colors.WindowColor)
+	wnd.SetBorderPadding(1, 1, 1, 1)
 
-	for i, method := range c.conn.AvailableMethods {
-		listMethods.AddItem(method, "", 0, nil)
+	inpMethods.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		getText := inpMethods.GetText()
 
-		// Ignore if none was selected before
-		if c.conn.SelectedMethod != nil && *c.conn.SelectedMethod == method {
-			listMethods.SetCurrentItem(i)
+		switch event.Key() {
+		case tcell.KeyDown, tcell.KeyEnter, tcell.KeyTAB:
+			c.ui.SetFocus(listMethods)
+			return nil
+		case tcell.KeyEscape:
+			c.ui.WinMan.RemoveWindow(wnd)
+			c.ui.SetFocus(c.ui.MainLayout)
+			return nil
+		case tcell.KeyRune:
+			getText = getText + string(event.Rune())
+		case tcell.KeyBackspace, tcell.KeyBackspace2:
+			if len(getText) > 0 {
+				getText = getText[:len(getText)-1]
+			}
 		}
-	}
+
+		fuzzyFind := fuzzy.FindFold(getText, c.conn.AvailableMethods)
+		c.refreshList(listMethods, fuzzyFind)
+
+		return event
+	})
 
 	listMethods.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+
 		switch event.Key() {
 		case tcell.KeyEscape:
 			c.ui.WinMan.RemoveWindow(wnd)
@@ -121,16 +166,27 @@ func (c Controller) SetRequestMethods() {
 			item, _ := listMethods.GetItemText(idx)
 			c.conn.SelectedMethod = &item
 
+			// Reset the search bar
+			inpMethods.SetText("")
+
 			// Remove the window and restore focus to menu list
 			c.PrintLog("👉 Method set to [blue]"+*c.conn.SelectedMethod, LOG_INFO)
 			c.ui.WinMan.RemoveWindow(wnd)
 			c.ui.SetFocus(c.ui.MenuList)
+		case tcell.KeyRune, tcell.KeyBackspace, tcell.KeyBackspace2:
+			// Set focus to input field when user typing something
+			c.ui.SetFocus(inpMethods)
+		case tcell.KeyTAB:
+			c.ui.SetFocus(inpMethods)
+			return nil
 		}
 		return event
 	})
 
+	c.refreshList(listMethods, c.conn.AvailableMethods)
+
 	wnd.SetModal(true)
-	wnd.SetRect(0, 0, 100, 7)
+	wnd.SetRect(0, 0, 100, 20)
 	wnd.AddButton(&winman.Button{
 		Symbol: 'X',
 		OnClick: func() {
@@ -160,6 +216,21 @@ func (c Controller) SetRequestMethods() {
 	c.ui.SetFocus(wnd)
 }
 
+func (c Controller) refreshList(listView *tview.List, items []string) {
+	listView.Clear()
+	listView.SetCurrentItem(0)
+
+	for i, method := range items {
+		listView.AddItem(method, "", 0, nil)
+
+		// Ignore if none was selected before
+		if c.conn.SelectedMethod != nil && *c.conn.SelectedMethod == method {
+			listView.SetCurrentItem(i)
+		}
+	}
+
+}
+
 // SetAuthorizationModal used to show the authorization modal dialog
 func (c Controller) SetAuthorizationModal() {
 	// Create set authorization modal
@@ -175,8 +246,18 @@ func (c Controller) SetAuthorizationModal() {
 		SetDraggable(true).
 		SetTitle("🔑 Authorization ")
 
-	wnd.SetBackgroundColor(tcell.GetColor(entity.SelectedTheme.Colors["WindowColor"]))
+	wnd.SetBackgroundColor(c.theme.Colors.WindowColor)
 	txtAuthorization.SetFieldBackgroundColor(wnd.GetBackgroundColor())
+	txtAuthorization.SetBackgroundColor(wnd.GetBackgroundColor())
+
+	// Set placeholder text and style
+	style := tcell.StyleDefault.
+		Background(wnd.GetBackgroundColor()).
+		Italic(true)
+
+	txtAuthorization.SetPlaceholder("Set token without the Bearer prefix")
+	txtAuthorization.SetPlaceholderTextColor(c.theme.Colors.PlaceholderColor)
+	txtAuthorization.SetPlaceholderStyle(style)
 
 	txtAuthorization.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
@@ -199,7 +280,6 @@ func (c Controller) SetAuthorizationModal() {
 				}
 
 				c.conn.Authorization = &auth
-
 				c.PrintLog(fmt.Sprintf("🔒 Authorization set [blue]%s", txtAuthorization.GetText()), LOG_INFO)
 			}
 
@@ -248,7 +328,7 @@ func (c Controller) SetRequestPayload() {
 		SetTitle(" Request Payload ").
 		SetDraggable(true)
 
-	wnd.SetBackgroundColor(tcell.GetColor(c.theme.Colors["WindowColor"]))
+	wnd.SetBackgroundColor(c.theme.Colors.WindowColor)
 	form.SetBackgroundColor(wnd.GetBackgroundColor())
 
 	form.SetBorderPadding(1, 1, 0, 1)
@@ -256,7 +336,7 @@ func (c Controller) SetRequestPayload() {
 	// Create text area for filling the payload
 	txtPayload := tview.NewTextArea().SetText(requestPayload, true)
 	txtPayload.SetSize(9, 100)
-	form.SetFieldBackgroundColor(tcell.GetColor(c.theme.Colors["FieldColor"]))
+	form.SetFieldBackgroundColor(c.theme.Colors.FieldColor)
 	form.AddFormItem(txtPayload)
 
 	// Populate Buttons
@@ -325,8 +405,6 @@ func (c Controller) SetRequestPayload() {
 	})
 
 	form.SetButtonsAlign(tview.AlignRight)
-
-	form.SetButtonBackgroundColor(tcell.GetColor(c.theme.Colors["ButtonColor"]))
 
 	wnd.SetModal(true)
 	wnd.SetRect(0, 0, 70, 15)

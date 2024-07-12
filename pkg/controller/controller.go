@@ -21,7 +21,7 @@ func NewController() Controller {
 	ui := ui.NewView()
 	conn := entity.Session{
 		// Default server URL
-		ServerURL: "localhost:50051",
+		ServerURL: "localhost:20010",
 	}
 
 	bookmarks := []entity.Bookmark{}
@@ -31,7 +31,7 @@ func NewController() Controller {
 		ui,
 		&conn,
 		&bookmarks,
-		entity.SelectedTheme,
+		entity.TerminalTheme,
 	}
 
 	// Initialize bookmark tree view
@@ -57,13 +57,6 @@ func NewController() Controller {
 	return c
 }
 
-func (c Controller) initSys() {
-	c.PrintLog(fmt.Sprintf("✨ Welcome to Chiko v%s", entity.APP_VERSION), LOG_INFO)
-
-	// Load bookmarks
-	c.loadBookmarks()
-}
-
 func (c Controller) Run() error {
 	c.InitMenu()
 
@@ -71,4 +64,11 @@ func (c Controller) Run() error {
 
 	c.ui.App.EnableMouse(true)
 	return c.ui.App.Run()
+}
+
+func (c Controller) initSys() {
+	c.PrintLog(fmt.Sprintf("✨ Welcome to Chiko v%s", entity.APP_VERSION), LOG_INFO)
+
+	// Load bookmarks
+	c.loadBookmarks()
 }

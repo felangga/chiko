@@ -9,7 +9,6 @@ import (
 )
 
 func TestParseMetadata(t *testing.T) {
-
 	test := []struct {
 		name     string
 		session  entity.Session
