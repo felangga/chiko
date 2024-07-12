@@ -7,13 +7,12 @@ import (
 	"github.com/rivo/tview"
 
 	"chiko/pkg/entity"
-	"chiko/pkg/ui/menu"
 )
 
 type ComponentLayout struct {
 	MenuList     *tview.List
 	BookmarkList *tview.TreeView
-	OutputPanel  *tview.TextView
+	LogList      *tview.TextView
 }
 
 type UI struct {
@@ -31,16 +30,6 @@ func (u *UI) SetFocus(p tview.Primitive) {
 func NewUI() UI {
 	app := tview.NewApplication()
 	wm := winman.NewWindowManager()
-
-	// outputPanel := tview.NewTextView()
-	// outputPanel.SetDynamicColors(true)
-	// outputPanel.SetTitle(" 📃 Output Logs ")
-	// outputPanel.SetBorder(true)
-	// outputPanel.SetWordWrap(true)
-	// outputPanel.SetBorderPadding(1, 1, 1, 1)
-	// outputPanel.SetScrollable(true).SetChangedFunc(func() {
-	// 	app.Draw()
-	// })
 
 	// Handle keypress on menu list
 
@@ -65,14 +54,10 @@ func NewUI() UI {
 		nil,
 	}
 
-	// Init Menu List
-	menuList := menu.MenuUI{
-		ParentUI: &ui,
-	}
-
 	ui.Layout = &ComponentLayout{
-		MenuList:     menuList.InitSidebarMenu(),
+		MenuList:     ui.InitSidebarMenu(),
 		BookmarkList: ui.InitBookmarkMenu(),
+		LogList:      ui.InitLogList(),
 	}
 
 	window := wm.NewWindow().
@@ -104,8 +89,8 @@ func (u *UI) setupAppLayout() *tview.Flex {
 		AddItem(u.Layout.BookmarkList, 0, 1, false)
 
 	childLayout := tview.NewFlex().SetDirection(tview.FlexColumn).
-		AddItem(splitSidebar, 35, 1, true)
-		// AddItem(outputPanel, 0, 4, false)
+		AddItem(splitSidebar, 35, 1, true).
+		AddItem(u.Layout.LogList, 0, 4, false)
 
 	layout := tview.NewFlex().SetDirection(tview.FlexRow).
 		AddItem(setupAppTitle(), 3, 1, false).

@@ -1,17 +1,13 @@
-package menu
+package ui
 
 import (
+	"strings"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
-
-	"chiko/pkg/ui"
 )
 
-type MenuUI struct {
-	ParentUI *ui.UI
-}
-
-func (u *MenuUI) InitSidebarMenu() *tview.List {
+func (u *UI) InitSidebarMenu() *tview.List {
 	// Setup the side bar menu
 	menuList := tview.NewList().ShowSecondaryText(false)
 	menuList.SetBorder(true).SetTitle(" 🐶 Menu ")
@@ -23,21 +19,21 @@ func (u *MenuUI) InitSidebarMenu() *tview.List {
 	// menuList.AddItem("Metadata", "", 'd', nil)
 	// menuList.AddItem("Request Payload", "", 'p', c.SetRequestPayload)
 	// menuList.AddItem("Invoke", "", 'i', c.DoInvoke)
-	// menuList.AddItem("[::d]"+strings.Repeat(string(tcell.RuneHLine), 25), "", 0, nil)
+	menuList.AddItem("[::d]"+strings.Repeat(string(tcell.RuneHLine), 25), "", 0, nil)
 	// menuList.AddItem("Save to Bookmark", "", 'b', c.DoSaveBookmark)
-	menuList.AddItem("Quit", "", 'q', u.ParentUI.QuitApplication)
+	menuList.AddItem("Quit", "", 'q', u.QuitApplication)
 
 	// Handle keypress on menu list
-	u.handleInputCapture(menuList)
+	u.handleMenuInputCapture(menuList)
 
 	return menuList
 }
 
-func (u *MenuUI) handleInputCapture(menuList *tview.List) {
+func (u *UI) handleMenuInputCapture(menuList *tview.List) {
 	menuList.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
 		case tcell.KeyTAB:
-			//u.SetFocus(u.BookmarkList)
+			u.SetFocus(u.Layout.BookmarkList)
 		}
 		return event
 	})
