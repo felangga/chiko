@@ -1,34 +1,27 @@
 package ui
 
 import (
-	"github.com/gdamore/tcell/v2"
-	"github.com/rivo/tview"
+	"chiko/pkg/entity"
+	"fmt"
+	"time"
 )
 
-// InitLogList initializes the log panel on the main screen
-func (u *UI) InitLogList() *tview.TextView {
-	logPanel := tview.NewTextView()
-	logPanel.SetDynamicColors(true)
-	logPanel.SetTitle(" 📃 Logs ")
-	logPanel.SetBorder(true)
-	logPanel.SetWordWrap(true)
-	logPanel.SetBorderPadding(1, 1, 1, 1)
+// PrintLog is used to print a log message to the log window
+func (u *UI) PrintLog(param entity.LogParam) {
+	// Get last log message
+	lastLog := u.Layout.LogList.GetText(false)
 
-	logPanel.SetScrollable(true).SetChangedFunc(func() {
-		u.App.Draw()
-	})
+	warnaLog := "white"
+	switch param.Type {
+	case entity.LOG_ERROR:
+		warnaLog = "red"
+	case entity.LOG_WARNING:
+		warnaLog = "yellow"
+	}
 
-	u.handleLogInputCapture(logPanel)
+	formatLog := fmt.Sprintf("[green][%s] [%s]%s [white]\n", time.Now().Format(time.RFC822), warnaLog, param.Content)
+	u.Layout.LogList.SetWordWrap(true).SetText(lastLog + formatLog)
 
-	return logPanel
-}
-
-func (u *UI) handleLogInputCapture(logPanel *tview.TextView) {
-	logPanel.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		switch event.Key() {
-		case tcell.KeyTAB:
-			u.App.SetFocus(u.Layout.MenuList)
-		}
-		return event
-	})
+	// Scroll log window to bottom
+	u.Layout.LogList.ScrollToEnd()
 }

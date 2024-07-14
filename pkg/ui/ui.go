@@ -6,6 +6,7 @@ import (
 	"github.com/epiclabs-io/winman"
 	"github.com/rivo/tview"
 
+	"chiko/pkg/controller"
 	"chiko/pkg/entity"
 )
 
@@ -19,6 +20,9 @@ type UI struct {
 	App    *tview.Application
 	WinMan *winman.Manager
 	Layout *ComponentLayout
+
+	Controller *controller.Controller
+	Theme      *entity.Theme
 }
 
 func (u *UI) SetFocus(p tview.Primitive) {
@@ -27,31 +31,26 @@ func (u *UI) SetFocus(p tview.Primitive) {
 	})
 }
 
+func (u UI) Run() error {
+	u.App.EnableMouse(true)
+	return u.App.Run()
+}
+
+func (u UI) QuitApplication() {
+	u.App.Stop()
+}
+
 func NewUI() UI {
 	app := tview.NewApplication()
 	wm := winman.NewWindowManager()
-
-	// Handle keypress on menu list
-
-	// bookmarkList.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-	// 	switch event.Key() {
-	// 	case tcell.KeyTAB:
-	// 		app.SetFocus(outputPanel)
-	// 	}
-	// 	return event
-	// })
-	// outputPanel.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-	// 	switch event.Key() {
-	// 	case tcell.KeyTAB:
-	// 		app.SetFocus(menuList)
-	// 	}
-	// 	return event
-	// })
+	ctrl := controller.NewController()
 
 	ui := UI{
 		app,
 		wm,
 		nil,
+		&ctrl,
+		&entity.TerminalTheme,
 	}
 
 	ui.Layout = &ComponentLayout{
@@ -68,6 +67,7 @@ func NewUI() UI {
 	window.Maximize()
 	app.SetRoot(wm, true)
 
+	ui.startupSequence()
 	return ui
 }
 
@@ -82,6 +82,7 @@ func setupAppTitle() *tview.TextView {
 	return title
 }
 
+// setupAppLayout sets up the main grid layout of the application.
 func (u *UI) setupAppLayout() *tview.Flex {
 	// Setup the main layout
 	splitSidebar := tview.NewFlex().SetDirection(tview.FlexRow).
@@ -97,12 +98,4 @@ func (u *UI) setupAppLayout() *tview.Flex {
 		AddItem(childLayout, 0, 1, true)
 
 	return layout
-}
-
-func (u UI) Run() error {
-	return u.App.Run()
-}
-
-func (u UI) QuitApplication() {
-	u.App.Stop()
 }
