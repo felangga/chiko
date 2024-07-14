@@ -13,3 +13,4 @@ https://github.com/user-attachments/assets/acc4be04-6be6-4743-ad30-ddfe1bcc229d
 - Add support for metadata (headers)
 - Add support to import `.proto` files for service that doesn't support server reflection
 - Add support for any kind of authorization types
+- Add dump log to file feature
