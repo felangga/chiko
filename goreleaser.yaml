@@ -20,3 +20,14 @@ release:
   github:
     owner: felangga
     name: chiko
+
+brews:
+  - name: chiko
+    tap:
+      owner: felangga
+      name: homebrew-chiko
+    homepage: "https://github.com/felangga/chiko"
+    description: "A simple TUI gRPC client"
+
+changelog:
+  use: true
