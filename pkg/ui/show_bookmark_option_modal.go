@@ -5,6 +5,7 @@ import (
 
 	"github.com/epiclabs-io/winman"
 	"github.com/gdamore/tcell/v2"
+	"github.com/google/uuid"
 	"github.com/rivo/tview"
 
 	"chiko/pkg/entity"
@@ -16,7 +17,7 @@ func (u UI) ShowBookmarkOptionsModal(parentWnd tview.Primitive, bookmark entity.
 	listOptions.ShowSecondaryText(false)
 	listOptions.SetBackgroundColor(u.Theme.Colors.WindowColor)
 
-	wnd := u.CreateModalDialog(CreateModalDialogParam{
+	wnd := u.CreateModalDialog(CreateModalDiaLog{
 		title:         " 📚 Bookmark Options ",
 		rootView:      listOptions,
 		draggable:     true,
@@ -58,9 +59,9 @@ type populateBookmarkChoicesParam struct {
 func (u *UI) populateBookmarkChoices(param populateBookmarkChoicesParam) {
 	// Load bookmark to the current session
 	param.listOptions.AddItem("Load Bookmark", "", 'a', func() {
-		u.Controller.ApplyBookmark(param.bookmark)
+		u.ApplyBookmark(param.bookmark)
 
-		u.PrintLog(entity.LogParam{
+		u.PrintLog(entity.Log{
 			Content: fmt.Sprintf("📚 Bookmark loaded : %s", param.bookmark.Name),
 			Type:    entity.LOG_INFO,
 		})
@@ -82,15 +83,15 @@ func (u *UI) populateBookmarkChoices(param populateBookmarkChoicesParam) {
 				{
 					Name: "Yes",
 					OnClick: func() {
-						err := u.Controller.DeleteBookmark(param.bookmark)
+						err := u.DeleteBookmark(param.bookmark)
 						if err != nil {
-							u.PrintLog(entity.LogParam{
+							u.PrintLog(entity.Log{
 								Content: fmt.Sprintf("❌ failed to delete bookmark, err: %v", err),
 								Type:    entity.LOG_ERROR,
 							})
 						}
 
-						u.PrintLog(entity.LogParam{
+						u.PrintLog(entity.Log{
 							Content: fmt.Sprintf("✅ bookmark [blue]%s [white]deleted", param.bookmark.Name),
 							Type:    entity.LOG_INFO,
 						})
@@ -109,4 +110,55 @@ func (u *UI) populateBookmarkChoices(param populateBookmarkChoicesParam) {
 		})
 
 	})
+}
+
+func (u *UI) ApplyBookmark(session entity.Session) {
+	// Get selected connection
+	*u.GRPC.Conn = session
+
+	go func() {
+		err := u.GRPC.CheckGRPC(u.GRPC.Conn.ServerURL)
+		if err != nil {
+			u.PrintLog(entity.Log{
+				Content: err.Error(),
+				Type:    entity.LOG_ERROR,
+			})
+			return
+		}
+	}()
+}
+
+// DeleteBookmark is used to delete a bookmark from the bookmark tree and save the bookmark
+func (u *UI) DeleteBookmark(b entity.Session) error {
+	// Helper function to remove a session from a bookmark
+	removeSession := func(sessions []entity.Session, sessionID *uuid.UUID) []entity.Session {
+		for i, session := range sessions {
+			if session.ID == *sessionID {
+				return append(sessions[:i], sessions[i+1:]...)
+			}
+		}
+		return sessions
+	}
+
+	// Regenerate the boomark tree
+	for i, bookmark := range *&u.Bookmark.Bookmarks {
+		updatedSessions := removeSession(bookmark.Sessions, &b.ID)
+		if len(updatedSessions) != len(bookmark.Sessions) {
+
+			// Regenerate the bookmark list
+			bookmark.Sessions = updatedSessions
+			if len(bookmark.Sessions) == 0 {
+				u.Bookmark.Bookmarks = append((u.Bookmark.Bookmarks)[:i], (u.Bookmark.Bookmarks)[i+1:]...)
+			}
+
+			err := u.Bookmark.SaveBookmark()
+			if err != nil {
+				return err
+			}
+
+			return nil
+		}
+	}
+
+	return nil
 }

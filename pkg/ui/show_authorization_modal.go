@@ -13,8 +13,8 @@ import (
 func (u *UI) ShowAuthorizationModal() {
 
 	var currentToken string
-	if u.Controller.Conn.Authorization != nil {
-		currentToken = u.Controller.Conn.Authorization.BearerToken.Token
+	if u.GRPC.Conn.Authorization != nil {
+		currentToken = u.GRPC.Conn.Authorization.BearerToken.Token
 	}
 
 	txtAuthorization := tview.NewInputField()
@@ -31,7 +31,7 @@ func (u *UI) ShowAuthorizationModal() {
 	txtAuthorization.SetPlaceholderTextColor(u.Theme.Colors.PlaceholderColor)
 	txtAuthorization.SetPlaceholderStyle(style)
 
-	wnd := u.CreateModalDialog(CreateModalDialogParam{
+	wnd := u.CreateModalDialog(CreateModalDiaLog{
 		title:         " 🔑 Authorization ",
 		rootView:      txtAuthorization,
 		draggable:     true,
@@ -51,9 +51,9 @@ func (u *UI) ShowAuthorizationModal_SetInputCapture(wnd *winman.WindowBase, txtA
 		case tcell.KeyEnter:
 			// Check if empty
 			if len(txtAuthorization.GetText()) < 1 {
-				u.Controller.Conn.Authorization = nil
+				u.GRPC.Conn.Authorization = nil
 				if len(currentToken) > 0 {
-					u.PrintLog(entity.LogParam{
+					u.PrintLog(entity.Log{
 						Content: "🔒 Authorization removed",
 						Type:    entity.LOG_INFO,
 					})
@@ -66,8 +66,8 @@ func (u *UI) ShowAuthorizationModal_SetInputCapture(wnd *winman.WindowBase, txtA
 					},
 				}
 
-				u.Controller.Conn.Authorization = &auth
-				u.PrintLog(entity.LogParam{
+				u.GRPC.Conn.Authorization = &auth
+				u.PrintLog(entity.Log{
 					Content: fmt.Sprintf("🔒 Authorization set [blue]%s", txtAuthorization.GetText()),
 					Type:    entity.LOG_INFO,
 				})

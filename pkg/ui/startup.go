@@ -8,7 +8,7 @@ import (
 )
 
 func (u *UI) startupSequence() {
-	u.PrintLog(entity.LogParam{
+	u.PrintLog(entity.Log{
 		Content: fmt.Sprintf("✨ Welcome to Chiko v%s", entity.APP_VERSION),
 		Type:    entity.LOG_INFO,
 	})
@@ -19,9 +19,9 @@ func (u *UI) startupSequence() {
 
 func (u *UI) loadBookmarks() {
 	// Load bookmarks from file
-	err := u.Controller.LoadBookmarks()
+	err := u.Bookmark.LoadBookmarks()
 	if err != nil {
-		u.PrintLog(entity.LogParam{
+		u.PrintLog(entity.Log{
 			Content: fmt.Sprintf("❌ failed to load bookmarks, err: %v", err),
 			Type:    entity.LOG_ERROR,
 		})
@@ -29,7 +29,7 @@ func (u *UI) loadBookmarks() {
 	}
 
 	// Populate bookmarks list
-	for _, b := range *u.Controller.Bookmarks {
+	for _, b := range u.Bookmark.Bookmarks {
 		categoryNode := tview.NewTreeNode("📁 " + b.CategoryName)
 		categoryNode.SetReference(b)
 
@@ -42,8 +42,8 @@ func (u *UI) loadBookmarks() {
 		u.Layout.BookmarkList.GetRoot().AddChild(categoryNode)
 	}
 
-	u.PrintLog(entity.LogParam{
-		Content: fmt.Sprintf("📚 %d bookmark(s) loaded", len(*u.Controller.Bookmarks)),
+	u.PrintLog(entity.Log{
+		Content: fmt.Sprintf("📚 %d bookmark(s) loaded", len(u.Bookmark.Bookmarks)),
 		Type:    entity.LOG_INFO,
 	})
 }
@@ -53,7 +53,7 @@ func (u *UI) logDumper() {
 	go func() {
 		for {
 			select {
-			case log := <-u.Controller.LogDump:
+			case log := <-u.LogChannel:
 				u.PrintLog(log)
 			}
 		}

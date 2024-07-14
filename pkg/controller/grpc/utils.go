@@ -1,10 +1,10 @@
-package controller
+package grpc
 
 import (
 	"regexp"
 )
 
-func (c *Controller) parseRequestResponse(text string) [][]string {
+func (g *GRPC) parseRequestResponse(text string) [][]string {
 	var re = regexp.MustCompile(`\(([^()]*)\)`)
 	return re.FindAllStringSubmatch(text, -1)
 }

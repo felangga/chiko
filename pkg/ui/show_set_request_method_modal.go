@@ -11,8 +11,8 @@ import (
 
 // ShowSetRequestMethodModal is used to show the RPC method selection modal dialog
 func (u *UI) ShowSetRequestMethodModal() {
-	if u.Controller.Conn.ActiveConnection == nil {
-		u.PrintLog(entity.LogParam{
+	if u.GRPC.Conn.ActiveConnection == nil {
+		u.PrintLog(entity.Log{
 			Content: "❗ no active connection",
 			Type:    entity.LOG_WARNING,
 		})
@@ -42,7 +42,7 @@ func (u *UI) ShowSetRequestMethodModal() {
 	wndLayer.AddItem(txtSearch, 1, 1, true)
 	wndLayer.AddItem(listMethods, 0, 1, false)
 
-	wnd := u.CreateModalDialog(CreateModalDialogParam{
+	wnd := u.CreateModalDialog(CreateModalDiaLog{
 		title:         " 📡 Select RPC Methods ",
 		rootView:      wndLayer,
 		draggable:     true,
@@ -53,7 +53,7 @@ func (u *UI) ShowSetRequestMethodModal() {
 	wnd.SetBorderPadding(1, 1, 1, 1)
 
 	u.ShowSetRequestMethodModal_SetInputCapture(wnd, listMethods, txtSearch)
-	u.refreshRequestMethodList(listMethods, u.Controller.Conn.AvailableMethods)
+	u.refreshRequestMethodList(listMethods, u.GRPC.Conn.AvailableMethods)
 
 	// Customize window to have maximize button
 	var maxMinButton *winman.Button
@@ -92,7 +92,7 @@ func (u *UI) ShowSetRequestMethodModal_SetInputCapture(wnd *winman.WindowBase, l
 			}
 		}
 
-		fuzzyFind := fuzzy.FindFold(getText, u.Controller.Conn.AvailableMethods)
+		fuzzyFind := fuzzy.FindFold(getText, u.GRPC.Conn.AvailableMethods)
 		u.refreshRequestMethodList(listMethods, fuzzyFind)
 
 		return event
@@ -105,14 +105,14 @@ func (u *UI) ShowSetRequestMethodModal_SetInputCapture(wnd *winman.WindowBase, l
 		case tcell.KeyEnter:
 			idx := listMethods.GetCurrentItem()
 			item, _ := listMethods.GetItemText(idx)
-			u.Controller.Conn.SelectedMethod = &item
+			u.GRPC.Conn.SelectedMethod = &item
 
 			// Reset the search bar
 			txtSearch.SetText("")
 
 			// Remove the window and restore focus to menu list
-			u.PrintLog(entity.LogParam{
-				Content: "👉 Method set to [blue]" + *u.Controller.Conn.SelectedMethod,
+			u.PrintLog(entity.Log{
+				Content: "👉 Method set to [blue]" + *u.GRPC.Conn.SelectedMethod,
 				Type:    entity.LOG_INFO,
 			})
 
@@ -137,7 +137,7 @@ func (u *UI) refreshRequestMethodList(listView *tview.List, items []string) {
 		listView.AddItem(method, "", 0, nil)
 
 		// Ignore if none was selected before
-		if u.Controller.Conn.SelectedMethod != nil && *u.Controller.Conn.SelectedMethod == method {
+		if u.GRPC.Conn.SelectedMethod != nil && *u.GRPC.Conn.SelectedMethod == method {
 			listView.SetCurrentItem(i)
 		}
 	}

@@ -7,10 +7,10 @@ import (
 )
 
 func (u *UI) ShowSetServerURLModal() {
-	txtServerURL := tview.NewInputField().SetText(u.Controller.Conn.ServerURL)
+	txtServerURL := tview.NewInputField().SetText(u.GRPC.Conn.ServerURL)
 	txtServerURL.SetFieldBackgroundColor(u.Theme.Colors.WindowColor)
 
-	wnd := u.CreateModalDialog(CreateModalDialogParam{
+	wnd := u.CreateModalDialog(CreateModalDiaLog{
 		title:         " 🌏 Enter Server URL ",
 		rootView:      txtServerURL,
 		draggable:     true,
@@ -31,7 +31,7 @@ func (u *UI) ShowSetServerURLModal_SetInputCapture(wnd *winman.WindowBase, inp *
 			return nil
 
 		case tcell.KeyEnter:
-			go u.Controller.CheckGRPC(inp.GetText())
+			go u.GRPC.CheckGRPC(inp.GetText())
 
 			// Remove the window and restore focus to menu list
 			u.WinMan.RemoveWindow(wnd)

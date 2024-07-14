@@ -1,9 +1,10 @@
-package controller
+package grpc
 
 import (
-	"chiko/pkg/entity"
 	"fmt"
 	"strings"
+
+	"chiko/pkg/entity"
 
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/golang/protobuf/proto"
@@ -13,7 +14,7 @@ import (
 )
 
 type handler struct {
-	controller Controller
+	grpc GRPC
 
 	method            *desc.MethodDescriptor
 	methodCount       int
@@ -40,17 +41,21 @@ func (h *handler) OnReceiveResponse(msg proto.Message) {
 	jsm := jsonpb.Marshaler{Indent: "  "}
 	respStr, err := jsm.MarshalToString(msg)
 	if err != nil {
-		h.controller.PrintLog(entity.LogParam{
+		log := entity.Log{
 			Content: fmt.Sprintf("failed to generate JSON form of response message: %v", err),
 			Type:    entity.LOG_ERROR,
-		})
+		}
+		log.DumpLogToChannel(h.grpc.LogChannel)
+
+		return
 	}
 	h.respMessages = append(h.respMessages, respStr)
 	output := fmt.Sprintf("\n%s\n\n%s\n[yellow]%s", headerResp, statusCode, respStr)
-	h.controller.PrintLog(entity.LogParam{
+	log := entity.Log{
 		Content: output,
 		Type:    entity.LOG_INFO,
-	})
+	}
+	log.DumpLogToChannel(h.grpc.LogChannel)
 }
 
 func (h *handler) OnResolveMethod(md *desc.MethodDescriptor) {

@@ -1,4 +1,4 @@
-package controller
+package bookmark
 
 import (
 	"encoding/json"
@@ -8,9 +8,9 @@ import (
 )
 
 // SaveBookmark is used to save the bookmark object to file by encoding the object with JSON.
-func (c Controller) SaveBookmark() error {
+func (b Bookmark) SaveBookmark() error {
 	// Encoding the object to JSON
-	convert, err := json.Marshal(c.Bookmarks)
+	convert, err := json.Marshal(b.Bookmarks)
 	if err != nil {
 		return err
 	}

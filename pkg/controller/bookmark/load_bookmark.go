@@ -1,4 +1,4 @@
-package controller
+package bookmark
 
 import (
 	"encoding/json"
@@ -8,7 +8,7 @@ import (
 )
 
 // LoadBookmarks is used to load bookmarks from bookmark file
-func (c *Controller) LoadBookmarks() error {
+func (b *Bookmark) LoadBookmarks() error {
 	if _, err := os.Stat(entity.BOOKMARKS_FILE_NAME); err != nil {
 		return err
 	}
@@ -19,7 +19,7 @@ func (c *Controller) LoadBookmarks() error {
 		return err
 	}
 
-	err = json.Unmarshal([]byte(file), &c.Bookmarks)
+	err = json.Unmarshal([]byte(file), &b.Bookmarks)
 	if err != nil {
 		return err
 	}

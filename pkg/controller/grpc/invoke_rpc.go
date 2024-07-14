@@ -1,7 +1,6 @@
-package controller
+package grpc
 
 import (
-	"chiko/pkg/entity"
 	"fmt"
 	"strings"
 
@@ -11,12 +10,12 @@ import (
 )
 
 // InvokeRPC will invoke the configured payload and try to hit the server with it
-func (c Controller) InvokeRPC() error {
-	if c.Conn.SelectedMethod == nil {
+func (g *GRPC) InvokeRPC() error {
+	if g.Conn.SelectedMethod == nil {
 		return fmt.Errorf("❗ no method selected")
 	}
 
-	if c.Conn.ActiveConnection == nil {
+	if g.Conn.ActiveConnection == nil {
 		return fmt.Errorf("❗ no active connection")
 	}
 
@@ -26,8 +25,8 @@ func (c Controller) InvokeRPC() error {
 	}
 	rf, formatter, err := grpcurl.RequestParserAndFormatter(
 		grpcurl.Format("json"),
-		c.Conn.DescriptorSource,
-		strings.NewReader(c.Conn.RequestPayload),
+		g.Conn.DescriptorSource,
+		strings.NewReader(g.Conn.RequestPayload),
 		options,
 	)
 	if err != nil {
@@ -35,15 +34,15 @@ func (c Controller) InvokeRPC() error {
 	}
 
 	h := &handler{
-		controller: c,
+		grpc: *g,
 	}
 
 	err = grpcurl.InvokeRPC(
-		c.Ctx,
-		c.Conn.DescriptorSource,
-		c.Conn.ActiveConnection,
-		*c.Conn.SelectedMethod,
-		c.Conn.ParseMetadata(),
+		g.Ctx,
+		g.Conn.DescriptorSource,
+		g.Conn.ActiveConnection,
+		*g.Conn.SelectedMethod,
+		g.Conn.ParseMetadata(),
 		h,
 		rf.Next,
 	)
@@ -59,12 +58,10 @@ func (c Controller) InvokeRPC() error {
 		formattedStatus, err := formatter(h.respStatus.Proto())
 		if err != nil {
 			return err
+
 		}
 
-		c.PrintLog(entity.LogParam{
-			Content: formattedStatus,
-			Type:    entity.LOG_ERROR,
-		})
+		return fmt.Errorf(formattedStatus)
 	}
 
 	return nil

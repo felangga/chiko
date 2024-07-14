@@ -6,7 +6,8 @@ import (
 	"github.com/epiclabs-io/winman"
 	"github.com/rivo/tview"
 
-	"chiko/pkg/controller"
+	"chiko/pkg/controller/bookmark"
+	"chiko/pkg/controller/grpc"
 	"chiko/pkg/entity"
 )
 
@@ -21,8 +22,11 @@ type UI struct {
 	WinMan *winman.Manager
 	Layout *ComponentLayout
 
-	Controller *controller.Controller
-	Theme      *entity.Theme
+	GRPC       *grpc.GRPC
+	Bookmark   *bookmark.Bookmark
+	LogChannel chan entity.Log
+
+	Theme *entity.Theme
 }
 
 func (u *UI) SetFocus(p tview.Primitive) {
@@ -41,15 +45,20 @@ func (u UI) QuitApplication() {
 }
 
 func NewUI() UI {
+	log := make(chan entity.Log)
+
 	app := tview.NewApplication()
 	wm := winman.NewWindowManager()
-	ctrl := controller.NewController()
+	grpc := grpc.NewGRPC(log)
+	bookmark := bookmark.NewBookmark()
 
 	ui := UI{
 		app,
 		wm,
 		nil,
-		&ctrl,
+		&grpc,
+		&bookmark,
+		log,
 		&entity.TerminalTheme,
 	}
 

@@ -15,13 +15,13 @@ func (u *UI) ShowSaveToBookmarkModal() {
 	u.ShowBookmarkCategoryModal(func(wnd winman.Window, b *entity.Bookmark) {
 		u.ShowBookmarkNameModal(wnd, func(bookmarkName string) {
 			genID := uuid.New()
-			u.Controller.Conn.ID = genID
-			u.Controller.Conn.Name = bookmarkName
-			b.Sessions = append(b.Sessions, *u.Controller.Conn)
+			u.GRPC.Conn.ID = genID
+			u.GRPC.Conn.Name = bookmarkName
+			b.Sessions = append(b.Sessions, *u.GRPC.Conn)
 
-			err := u.Controller.SaveBookmark()
+			err := u.Bookmark.SaveBookmark()
 			if err != nil {
-				u.PrintLog(entity.LogParam{
+				u.PrintLog(entity.Log{
 					Content: "❌ failed to save bookmark",
 					Type:    entity.LOG_ERROR,
 				})
@@ -34,10 +34,10 @@ func (u *UI) ShowSaveToBookmarkModal() {
 
 // ShowBookmarkNameModal is used to show modal with text box to change the bookmark name
 func (u *UI) ShowBookmarkNameModal(parentWND winman.Window, onEnter func(bookmarkName string)) {
-	bookmarkName := tview.NewInputField().SetText(u.Controller.Conn.Name)
+	bookmarkName := tview.NewInputField().SetText(u.GRPC.Conn.Name)
 	bookmarkName.SetFieldBackgroundColor(u.Theme.Colors.WindowColor)
 
-	wnd := u.CreateModalDialog(CreateModalDialogParam{
+	wnd := u.CreateModalDialog(CreateModalDiaLog{
 		title:         " ✏️ Enter Bookmark Name ",
 		rootView:      bookmarkName,
 		draggable:     true,
@@ -64,7 +64,7 @@ func (u *UI) ShowBookmarkCategoryModal(onSelectedCategory func(wnd winman.Window
 	list.ShowSecondaryText(false)
 	list.SetBackgroundColor(u.Theme.Colors.WindowColor)
 
-	wnd := u.CreateModalDialog(CreateModalDialogParam{
+	wnd := u.CreateModalDialog(CreateModalDiaLog{
 		title:         " 📚 Select Bookmark Category ",
 		rootView:      list,
 		draggable:     true,
@@ -79,8 +79,8 @@ func (u *UI) ShowBookmarkCategoryModal(onSelectedCategory func(wnd winman.Window
 		u.ShowCreateNewCategoryModal(wnd, list, onSelectedCategory)
 	})
 
-	for i := range *u.Controller.Bookmarks {
-		b := &((*u.Controller.Bookmarks)[i])
+	for i := range u.Bookmark.Bookmarks {
+		b := &((u.Bookmark.Bookmarks)[i])
 		list.AddItem("📁 "+b.CategoryName, "", 0, func() {
 			onSelectedCategory(wnd, b)
 		})
@@ -101,10 +101,10 @@ func (u *UI) ShowBookmarkCategoryModal_SetInputCapture(wnd *winman.WindowBase, l
 
 // ShowCreateNewCategoryModal is used to show modal with text box to create new category
 func (u *UI) ShowCreateNewCategoryModal(parentWND *winman.WindowBase, list *tview.List, onSelectedCategory func(wnd winman.Window, b *entity.Bookmark)) {
-	catName := tview.NewInputField().SetText(u.Controller.Conn.Name)
+	catName := tview.NewInputField().SetText(u.GRPC.Conn.Name)
 	catName.SetFieldBackgroundColor(u.Theme.Colors.WindowColor)
 
-	mdlNewCategory := u.CreateModalDialog(CreateModalDialogParam{
+	mdlNewCategory := u.CreateModalDialog(CreateModalDiaLog{
 		title:         " 📁 Enter New Category Name ",
 		rootView:      catName,
 		draggable:     true,
@@ -122,7 +122,7 @@ func (u *UI) ShowCreateNewCategoryModal(parentWND *winman.WindowBase, list *tvie
 				CategoryName: catName.GetText(),
 				Sessions:     []entity.Session{},
 			}
-			*u.Controller.Bookmarks = append(*u.Controller.Bookmarks, newCategory)
+			u.Bookmark.Bookmarks = append(u.Bookmark.Bookmarks, newCategory)
 
 			list.AddItem("📁 "+newCategory.CategoryName, "", 0, func() {
 				onSelectedCategory(parentWND, &newCategory)

@@ -12,8 +12,8 @@ import (
 
 // ShowRequestPayloadModal is used to show the request payload modal dialog
 func (u *UI) ShowRequestPayloadModal() {
-	if u.Controller.Conn.ActiveConnection == nil {
-		u.PrintLog(entity.LogParam{
+	if u.GRPC.Conn.ActiveConnection == nil {
+		u.PrintLog(entity.Log{
 			Content: "❗ no active connection",
 			Type:    entity.LOG_WARNING,
 		})
@@ -21,8 +21,8 @@ func (u *UI) ShowRequestPayloadModal() {
 		return
 	}
 
-	if u.Controller.Conn.SelectedMethod == nil {
-		u.PrintLog(entity.LogParam{
+	if u.GRPC.Conn.SelectedMethod == nil {
+		u.PrintLog(entity.Log{
 			Content: "❗ please select rpc method first",
 			Type:    entity.LOG_WARNING,
 		})
@@ -30,7 +30,7 @@ func (u *UI) ShowRequestPayloadModal() {
 		return
 	}
 
-	requestPayload := u.Controller.Conn.RequestPayload
+	requestPayload := u.GRPC.Conn.RequestPayload
 
 	// Create text area for filling the payload
 	txtPayload := tview.NewTextArea().SetText(requestPayload, true)
@@ -43,7 +43,7 @@ func (u *UI) ShowRequestPayloadModal() {
 	form.AddFormItem(txtPayload)
 	form.SetButtonsAlign(tview.AlignRight)
 
-	wnd := u.CreateModalDialog(CreateModalDialogParam{
+	wnd := u.CreateModalDialog(CreateModalDiaLog{
 		title:         " 📦 Request Payload ",
 		rootView:      form,
 		draggable:     true,
@@ -70,9 +70,9 @@ func (u *UI) ShowRequestPayloadModal_SetInputCapture(wnd *winman.WindowBase, for
 
 func (u *UI) ShowRequestPayloadModal_SetComponentActions(wnd *winman.WindowBase, form *tview.Form, txtPayload *tview.TextArea) {
 	form.AddButton("Generate Sample", func() {
-		out, err := u.Controller.GenerateRPCPayloadSample()
+		out, err := u.GRPC.GenerateRPCPayloadSample()
 		if err != nil {
-			u.PrintLog(entity.LogParam{
+			u.PrintLog(entity.Log{
 				Content: fmt.Sprintf("❗ failed to generate sample: %s", err.Error()),
 				Type:    entity.LOG_ERROR,
 			})
@@ -82,11 +82,11 @@ func (u *UI) ShowRequestPayloadModal_SetComponentActions(wnd *winman.WindowBase,
 	})
 
 	form.AddButton("Apply", func() {
-		u.Controller.Conn.RequestPayload = txtPayload.GetText()
+		u.GRPC.Conn.RequestPayload = txtPayload.GetText()
 
 		// Remove the window and restore focus to menu list
-		u.PrintLog(entity.LogParam{
-			Content: "\nRequest Payload:\n[yellow]" + u.Controller.Conn.RequestPayload,
+		u.PrintLog(entity.Log{
+			Content: "\nRequest Payload:\n[yellow]" + u.GRPC.Conn.RequestPayload,
 			Type:    entity.LOG_INFO,
 		})
 		u.CloseModalDialog(wnd, u.Layout.MenuList)

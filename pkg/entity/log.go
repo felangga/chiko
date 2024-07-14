@@ -8,7 +8,12 @@ const (
 	LOG_WARNING LogType = 2
 )
 
-type LogParam struct {
+type Log struct {
 	Content string
 	Type    LogType
+}
+
+func (l *Log) DumpLogToChannel(logChannel chan Log) {
+	// Send the log request to channel, then it will be displayed on the log window by the logDumper function
+	logChannel <- *l
 }

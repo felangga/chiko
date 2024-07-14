@@ -1,4 +1,4 @@
-package controller
+package grpc
 
 import (
 	"fmt"
@@ -9,18 +9,18 @@ import (
 )
 
 // GenerateRPCPayloadSample is used to generate sample request payload that will be filled to txtPayload text field
-func (c *Controller) GenerateRPCPayloadSample() (string, error) {
-	dsc, err := c.Conn.DescriptorSource.FindSymbol(*c.Conn.SelectedMethod)
+func (g *GRPC) GenerateRPCPayloadSample() (string, error) {
+	dsc, err := g.Conn.DescriptorSource.FindSymbol(*g.Conn.SelectedMethod)
 	if err != nil {
 		return "", err
 	}
 
-	txt, err := grpcurl.GetDescriptorText(dsc, c.Conn.DescriptorSource)
+	txt, err := grpcurl.GetDescriptorText(dsc, g.Conn.DescriptorSource)
 	if err != nil {
 		return "", err
 	}
 
-	rr := c.parseRequestResponse(txt)
+	rr := g.parseRequestResponse(txt)
 	if len(rr) < 2 {
 		return "", fmt.Errorf("failed to parse request response: %s", txt)
 	}
@@ -31,7 +31,7 @@ func (c *Controller) GenerateRPCPayloadSample() (string, error) {
 		requestMessage = requestMessage[1:]
 	}
 
-	dsc, err = c.Conn.DescriptorSource.FindSymbol(requestMessage)
+	dsc, err = g.Conn.DescriptorSource.FindSymbol(requestMessage)
 	if err != nil {
 		return "", err
 	}
@@ -39,7 +39,7 @@ func (c *Controller) GenerateRPCPayloadSample() (string, error) {
 	if dsc, ok := dsc.(*desc.MessageDescriptor); ok {
 		tmpl := grpcurl.MakeTemplate(dsc)
 		options := grpcurl.FormatOptions{EmitJSONDefaultFields: true}
-		_, formatter, err := grpcurl.RequestParserAndFormatter(grpcurl.Format("json"), c.Conn.DescriptorSource, nil, options)
+		_, formatter, err := grpcurl.RequestParserAndFormatter(grpcurl.Format("json"), g.Conn.DescriptorSource, nil, options)
 		if err != nil {
 			return "", err
 		}
