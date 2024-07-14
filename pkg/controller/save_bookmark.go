@@ -18,7 +18,6 @@ func (c Controller) SaveBookmark() error {
 	// Saving the json to file
 	err = os.WriteFile(entity.BOOKMARKS_FILE_NAME, convert, 0644)
 	if err != nil {
-		// c.PrintLog("💾 failed to write bookmark configuration, maybe write-protected?", LOG_ERROR)
 		return err
 	}
 
