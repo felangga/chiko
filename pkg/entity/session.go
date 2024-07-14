@@ -7,7 +7,7 @@ import (
 )
 
 type Session struct {
-	ID                uuid.UUID               `json:"id"`
+	ID                uuid.UUID                `json:"id"`
 	Name              string                   `json:"name"`
 	ServerURL         string                   `json:"server_url"`
 	Authorization     *Auth                    `json:"authorization"`

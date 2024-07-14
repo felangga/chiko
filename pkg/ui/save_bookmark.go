@@ -21,10 +21,6 @@ func (u *UI) ShowSaveToBookmarkModal() {
 			u.GRPC.Conn.Name = bookmarkName
 
 			b.Sessions = append(b.Sessions, *u.GRPC.Conn)
-			u.PrintLog(entity.Log{
-				Content: fmt.Sprintf("%p", b),
-				Type:    entity.LOG_ERROR,
-			})
 
 			err := u.Bookmark.SaveBookmark()
 			if err != nil {
@@ -94,9 +90,11 @@ func (u *UI) ShowBookmarkCategoryModal(onSelectedCategory func(wnd winman.Window
 		u.ShowCreateNewCategoryModal(wnd, list, onSelectedCategory)
 	})
 
-	for _, b := range *u.Bookmark.Categories {
-		list.AddItem("📁 "+b.Name, "", 0, func() {
-			onSelectedCategory(wnd, &b)
+	for i := range *u.Bookmark.Categories {
+		// Get the address of the newly appended category
+		categoryPtr := &(*u.Bookmark.Categories)[i]
+		list.AddItem("📁 "+categoryPtr.Name, "", 0, func() {
+			onSelectedCategory(wnd, categoryPtr)
 		})
 	}
 
