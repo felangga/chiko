@@ -4,6 +4,9 @@ Chiko is a TUI (Terminal User Interface) gRPC client. It is a simple tool to int
 
 https://github.com/user-attachments/assets/acc4be04-6be6-4743-ad30-ddfe1bcc229d
 
+## Install 
+You can visit the [Release Page](https://github.com/felangga/chiko/releases), and select the version that you want to download, the architecture and the operating system that you are using.
+
 ## Features
 - List all gRPC methods using server reflections
 - Generate sample request payload 
