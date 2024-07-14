@@ -8,7 +8,7 @@ on:
 jobs:
   goreleaser:
     runs-on: ubuntu-latest
-
+   
     steps:
       # Check out the code from the repository
       - name: Checkout code
@@ -27,7 +27,7 @@ jobs:
           version: latest
           args: release 
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
 
   homebrew:
     runs-on: ubuntu-latest
