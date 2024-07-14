@@ -1,6 +1,10 @@
+version: '2'
+
 project_name: chiko
+
 builds:
-  - main: ./cmd/chiko
+  - id: chiko
+    main: ./cmd/chiko
     goos:
       - linux
       - windows
@@ -10,8 +14,9 @@ builds:
       - arm64
 
 archives:
-  - format: tar.gz
-    name_template: "{{ .ProjectName }}_{{ .Tag }}_{{ .Os }}_{{ .Arch }}"
+  - id: default
+    format: tar.gz
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
     files:
       - README.md
       - LICENSE
