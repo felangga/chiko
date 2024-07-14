@@ -1,6 +1,8 @@
 package ui
 
 import (
+	"fmt"
+
 	"github.com/epiclabs-io/winman"
 	"github.com/gdamore/tcell/v2"
 	"github.com/google/uuid"
@@ -12,12 +14,17 @@ import (
 // ShowSaveToBookmarkModal used to open the save bookmark dialog to save the current payload to bookmark
 func (u *UI) ShowSaveToBookmarkModal() {
 	// Initiate saving bookmark sequence
-	u.ShowBookmarkCategoryModal(func(wnd winman.Window, b *entity.Bookmark) {
+	u.ShowBookmarkCategoryModal(func(wnd winman.Window, b *entity.Category) {
 		u.ShowBookmarkNameModal(wnd, func(bookmarkName string) {
 			genID := uuid.New()
 			u.GRPC.Conn.ID = genID
 			u.GRPC.Conn.Name = bookmarkName
+
 			b.Sessions = append(b.Sessions, *u.GRPC.Conn)
+			u.PrintLog(entity.Log{
+				Content: fmt.Sprintf("%p", b),
+				Type:    entity.LOG_ERROR,
+			})
 
 			err := u.Bookmark.SaveBookmark()
 			if err != nil {
@@ -25,7 +32,15 @@ func (u *UI) ShowSaveToBookmarkModal() {
 					Content: "❌ failed to save bookmark",
 					Type:    entity.LOG_ERROR,
 				})
+				return
 			}
+
+			u.PrintLog(entity.Log{
+				Content: fmt.Sprintf("✅ [white]bookmark [blue]%s [white]saved", bookmarkName),
+				Type:    entity.LOG_ERROR,
+			})
+
+			u.RefreshBookmarkList()
 		})
 
 		u.WinMan.RemoveWindow(wnd)
@@ -59,7 +74,7 @@ func (u *UI) ShowBookmarkNameModal(parentWND winman.Window, onEnter func(bookmar
 	})
 }
 
-func (u *UI) ShowBookmarkCategoryModal(onSelectedCategory func(wnd winman.Window, b *entity.Bookmark)) {
+func (u *UI) ShowBookmarkCategoryModal(onSelectedCategory func(wnd winman.Window, b *entity.Category)) {
 	list := tview.NewList()
 	list.ShowSecondaryText(false)
 	list.SetBackgroundColor(u.Theme.Colors.WindowColor)
@@ -79,10 +94,9 @@ func (u *UI) ShowBookmarkCategoryModal(onSelectedCategory func(wnd winman.Window
 		u.ShowCreateNewCategoryModal(wnd, list, onSelectedCategory)
 	})
 
-	for i := range u.Bookmark.Bookmarks {
-		b := &((u.Bookmark.Bookmarks)[i])
-		list.AddItem("📁 "+b.CategoryName, "", 0, func() {
-			onSelectedCategory(wnd, b)
+	for _, b := range *u.Bookmark.Categories {
+		list.AddItem("📁 "+b.Name, "", 0, func() {
+			onSelectedCategory(wnd, &b)
 		})
 	}
 
@@ -100,7 +114,7 @@ func (u *UI) ShowBookmarkCategoryModal_SetInputCapture(wnd *winman.WindowBase, l
 }
 
 // ShowCreateNewCategoryModal is used to show modal with text box to create new category
-func (u *UI) ShowCreateNewCategoryModal(parentWND *winman.WindowBase, list *tview.List, onSelectedCategory func(wnd winman.Window, b *entity.Bookmark)) {
+func (u *UI) ShowCreateNewCategoryModal(parentWND *winman.WindowBase, list *tview.List, onSelectedCategory func(wnd winman.Window, b *entity.Category)) {
 	catName := tview.NewInputField().SetText(u.GRPC.Conn.Name)
 	catName.SetFieldBackgroundColor(u.Theme.Colors.WindowColor)
 
@@ -118,14 +132,17 @@ func (u *UI) ShowCreateNewCategoryModal(parentWND *winman.WindowBase, list *tvie
 			u.CloseModalDialog(mdlNewCategory, parentWND)
 		case tcell.KeyEnter:
 			// Add new category to bookmark list
-			newCategory := entity.Bookmark{
-				CategoryName: catName.GetText(),
-				Sessions:     []entity.Session{},
+			newCategory := entity.Category{
+				Name:     catName.GetText(),
+				Sessions: []entity.Session{},
 			}
-			u.Bookmark.Bookmarks = append(u.Bookmark.Bookmarks, newCategory)
+			*u.Bookmark.Categories = append(*u.Bookmark.Categories, newCategory)
 
-			list.AddItem("📁 "+newCategory.CategoryName, "", 0, func() {
-				onSelectedCategory(parentWND, &newCategory)
+			// Get the address of the newly appended category
+			newCategoryPtr := &(*u.Bookmark.Categories)[len(*u.Bookmark.Categories)-1]
+
+			list.AddItem("📁 "+newCategory.Name, "", 0, func() {
+				onSelectedCategory(parentWND, newCategoryPtr)
 			})
 
 			// Remove the window and restore focus to previous window

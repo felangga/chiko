@@ -2,6 +2,7 @@ package bookmark
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 
 	"chiko/pkg/entity"
@@ -10,7 +11,8 @@ import (
 // LoadBookmarks is used to load bookmarks from bookmark file
 func (b *Bookmark) LoadBookmarks() error {
 	if _, err := os.Stat(entity.BOOKMARKS_FILE_NAME); err != nil {
-		return err
+		// If no bookmarks file found, then create a new one
+		b.SaveBookmark()
 	}
 
 	// Read bookmark file and dump to array of bookmarks
@@ -19,9 +21,9 @@ func (b *Bookmark) LoadBookmarks() error {
 		return err
 	}
 
-	err = json.Unmarshal([]byte(file), &b.Bookmarks)
+	err = json.Unmarshal([]byte(file), &b.Categories)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to read file, maybe corrupted")
 	}
 
 	return nil

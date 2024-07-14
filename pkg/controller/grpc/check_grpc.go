@@ -27,12 +27,6 @@ func (g *GRPC) CheckGRPC(serverURL string) error {
 	}
 	log.DumpLogToChannel(g.LogChannel)
 
-	log = entity.Log{
-		Content: "🔍 checking server reflection..." + g.Conn.ServerURL,
-		Type:    entity.LOG_INFO,
-	}
-	log.DumpLogToChannel(g.LogChannel)
-
 	conn, err := grpcurl.BlockingDial(g.Ctx, "tcp", serverURL, nil)
 	if err != nil {
 		return err

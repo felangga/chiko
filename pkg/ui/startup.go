@@ -28,24 +28,35 @@ func (u *UI) loadBookmarks() {
 		return
 	}
 
+	totalBookmarks := u.RefreshBookmarkList()
+
+	u.PrintLog(entity.Log{
+		Content: fmt.Sprintf("📚 %d bookmark(s) loaded", totalBookmarks),
+		Type:    entity.LOG_INFO,
+	})
+}
+
+func (u *UI) RefreshBookmarkList() int16 {
+	u.Layout.BookmarkList.GetRoot().ClearChildren()
+
 	// Populate bookmarks list
-	for _, b := range u.Bookmark.Bookmarks {
-		categoryNode := tview.NewTreeNode("📁 " + b.CategoryName)
+	var totalBookmarks int16
+	for _, b := range *u.Bookmark.Categories {
+		categoryNode := tview.NewTreeNode("📁 " + b.Name)
 		categoryNode.SetReference(b)
 
 		for _, session := range b.Sessions {
 			sessionNode := tview.NewTreeNode("📗 " + session.Name)
-			sessionNode.SetReference(session)
+			sessionNode.SetReference(&session)
 			categoryNode.AddChild(sessionNode)
+
+			totalBookmarks++
 		}
 
 		u.Layout.BookmarkList.GetRoot().AddChild(categoryNode)
 	}
 
-	u.PrintLog(entity.Log{
-		Content: fmt.Sprintf("📚 %d bookmark(s) loaded", len(u.Bookmark.Bookmarks)),
-		Type:    entity.LOG_INFO,
-	})
+	return totalBookmarks
 }
 
 // logDumper is used to dump log messages from channels to log window

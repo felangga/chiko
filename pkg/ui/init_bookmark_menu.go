@@ -29,6 +29,7 @@ func (u *UI) InitBookmarkMenu_SetInputCapture(bookmarkList *tview.TreeView) {
 		switch event.Key() {
 		case tcell.KeyTAB:
 			u.SetFocus(u.Layout.LogList)
+			return nil
 		}
 		return event
 	})
@@ -44,11 +45,10 @@ func (u *UI) InitBookmarkMenu_SetSelection(bookmarkList *tview.TreeView) {
 		children := node.GetChildren()
 		if len(children) == 0 {
 			switch node.GetReference().(type) {
-			case entity.Session:
-				getSession := node.GetReference().(entity.Session)
-				u.ShowBookmarkOptionsModal(u.Layout.MenuList, getSession)
+			case *entity.Session:
+				getSession := node.GetReference().(*entity.Session)
+				u.ShowBookmarkOptionsModal(u.Layout.BookmarkList, getSession)
 			}
-
 		} else {
 			// Collapse if visible, expand if collapsed.
 			node.SetExpanded(!node.IsExpanded())

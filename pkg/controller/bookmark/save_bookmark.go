@@ -10,7 +10,7 @@ import (
 // SaveBookmark is used to save the bookmark object to file by encoding the object with JSON.
 func (b Bookmark) SaveBookmark() error {
 	// Encoding the object to JSON
-	convert, err := json.Marshal(b.Bookmarks)
+	convert, err := json.Marshal(b.Categories)
 	if err != nil {
 		return err
 	}

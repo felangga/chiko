@@ -5,14 +5,14 @@ import (
 )
 
 type Bookmark struct {
-	Bookmarks []entity.Bookmark
+	Categories *[]entity.Category
 }
 
 // NewBookmark is used to create a new bookmark object
 func NewBookmark() Bookmark {
-	bookmarks := []entity.Bookmark{}
+	category := []entity.Category{}
 	b := Bookmark{
-		bookmarks,
+		&category,
 	}
 
 	return b
