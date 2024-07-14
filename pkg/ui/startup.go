@@ -1,10 +1,11 @@
 package ui
 
 import (
-	"chiko/pkg/entity"
 	"fmt"
 
 	"github.com/rivo/tview"
+
+	"github.com/felangga/chiko/pkg/entity"
 )
 
 func (u *UI) startupSequence() {

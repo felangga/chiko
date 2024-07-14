@@ -4,7 +4,7 @@ import (
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 
-	"chiko/pkg/entity"
+	"github.com/felangga/chiko/pkg/entity"
 )
 
 // InitBookmarkMenu initializes the bookmark sidebar menu

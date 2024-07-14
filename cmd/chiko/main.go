@@ -1,8 +1,6 @@
 package main
 
-import (
-	"chiko/pkg/ui"
-)
+import "github.com/felangga/chiko/pkg/ui"
 
 func main() {
 	err := ui.NewUI().Run()

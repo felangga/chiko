@@ -1,12 +1,13 @@
 package ui
 
 import (
-	"chiko/pkg/entity"
 	"fmt"
 
 	"github.com/epiclabs-io/winman"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
+
+	"github.com/felangga/chiko/pkg/entity"
 )
 
 // ShowAuthorizationModal used to show the authorization modal dialog

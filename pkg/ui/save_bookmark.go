@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rivo/tview"
 
-	"chiko/pkg/entity"
+	"github.com/felangga/chiko/pkg/entity"
 )
 
 // ShowSaveToBookmarkModal used to open the save bookmark dialog to save the current payload to bookmark

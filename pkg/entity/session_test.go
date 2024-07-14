@@ -3,9 +3,9 @@ package entity_test
 import (
 	"testing"
 
-	"chiko/pkg/entity"
-
 	"github.com/google/go-cmp/cmp"
+
+	"github.com/felangga/chiko/pkg/entity"
 )
 
 func TestParseMetadata(t *testing.T) {

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"os"
 
-	"chiko/pkg/entity"
+	"github.com/felangga/chiko/pkg/entity"
 )
 
 // SaveBookmark is used to save the bookmark object to file by encoding the object with JSON.

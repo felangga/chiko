@@ -5,7 +5,7 @@ import (
 	"github.com/jhump/protoreflect/grpcreflect"
 	reflectpb "google.golang.org/grpc/reflection/grpc_reflection_v1alpha"
 
-	"chiko/pkg/entity"
+	"github.com/felangga/chiko/pkg/entity"
 )
 
 // CheckGRPC will check if the server supports server reflection and list all available services and methods

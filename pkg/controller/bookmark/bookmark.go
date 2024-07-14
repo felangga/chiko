@@ -1,8 +1,6 @@
 package bookmark
 
-import (
-	"chiko/pkg/entity"
-)
+import "github.com/felangga/chiko/pkg/entity"
 
 type Bookmark struct {
 	Categories *[]entity.Category

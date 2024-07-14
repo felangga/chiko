@@ -6,7 +6,7 @@ import (
 	"github.com/lithammer/fuzzysearch/fuzzy"
 	"github.com/rivo/tview"
 
-	"chiko/pkg/entity"
+	"github.com/felangga/chiko/pkg/entity"
 )
 
 // ShowSetRequestMethodModal is used to show the RPC method selection modal dialog

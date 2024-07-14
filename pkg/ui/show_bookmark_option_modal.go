@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rivo/tview"
 
-	"chiko/pkg/entity"
+	"github.com/felangga/chiko/pkg/entity"
 )
 
 // ShowBookmarkOptionsModal is used to show the bookmark options modal, to load, overwrite, or remove the bookmark

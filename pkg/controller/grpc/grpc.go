@@ -1,10 +1,11 @@
 package grpc
 
 import (
-	"chiko/pkg/entity"
 	"context"
 
 	"github.com/google/uuid"
+
+	"github.com/felangga/chiko/pkg/entity"
 )
 
 type GRPC struct {

@@ -6,9 +6,9 @@ import (
 	"github.com/epiclabs-io/winman"
 	"github.com/rivo/tview"
 
-	"chiko/pkg/controller/bookmark"
-	"chiko/pkg/controller/grpc"
-	"chiko/pkg/entity"
+	"github.com/felangga/chiko/pkg/controller/bookmark"
+	"github.com/felangga/chiko/pkg/controller/grpc"
+	"github.com/felangga/chiko/pkg/entity"
 )
 
 type ComponentLayout struct {

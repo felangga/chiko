@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"chiko/pkg/entity"
+	"github.com/felangga/chiko/pkg/entity"
 )
 
 // LoadBookmarks is used to load bookmarks from bookmark file

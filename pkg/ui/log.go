@@ -1,9 +1,10 @@
 package ui
 
 import (
-	"chiko/pkg/entity"
 	"fmt"
 	"time"
+
+	"github.com/felangga/chiko/pkg/entity"
 )
 
 // PrintLog is used to print a log message to the log window

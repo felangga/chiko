@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"strings"
 
-	"chiko/pkg/entity"
-
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/golang/protobuf/proto"
 	"github.com/jhump/protoreflect/desc"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
+
+	"github.com/felangga/chiko/pkg/entity"
 )
 
 type handler struct {
