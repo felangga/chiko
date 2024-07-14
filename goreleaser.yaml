@@ -1,0 +1,23 @@
+project_name: chiko
+builds:
+  - main: ./cmd/chiko
+    goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+
+archives:
+  - format: tar.gz
+    name_template: "{{ .ProjectName }}_{{ .Tag }}_{{ .Os }}_{{ .Arch }}"
+    files:
+      - LICENSE
+      - README.md
+      - CHANGELOG.md
+
+release:
+  github:
+    owner: felangga
+    name: chiko
