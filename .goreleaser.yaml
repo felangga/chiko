@@ -34,8 +34,8 @@ brews:
       - "go"
     repository:
       owner: felangga
-      name: chiko
-      
+      name: homebrew-chiko
+
 
 changelog:
   use: github
