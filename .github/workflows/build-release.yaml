@@ -22,7 +22,7 @@ jobs:
 
       # Build and release Go binaries
       - name: Build and Release Binaries
-        uses: goreleaser/goreleaser-action@v4
+        uses: goreleaser/goreleaser-action@v6
         with:
           version: latest
           args: release 

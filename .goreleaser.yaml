@@ -1,5 +1,4 @@
-version: '2'
-
+version: 2
 project_name: chiko
 
 builds:
@@ -28,11 +27,10 @@ release:
 
 brews:
   - name: chiko
-    tap:
-      owner: felangga
-      name: homebrew-chiko
     homepage: "https://github.com/felangga/chiko"
     description: "A simple TUI gRPC client"
+    dependencies:
+      - "go"
 
 changelog:
   use: true
