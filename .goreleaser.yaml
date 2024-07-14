@@ -29,8 +29,14 @@ brews:
   - name: chiko
     homepage: "https://github.com/felangga/chiko"
     description: "A simple TUI gRPC client"
+    license: "MIT"
     dependencies:
       - "go"
+    repository:
+      owner: felangga
+      name: chiko
+      
 
 changelog:
-  use: true
+  use: github
+  sort: desc
