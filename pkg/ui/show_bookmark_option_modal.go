@@ -60,6 +60,11 @@ func (u *UI) populateBookmarkChoices(param populateBookmarkChoicesParam) {
 	param.listOptions.AddItem("Load Bookmark", "", 'a', func() {
 		u.Controller.ApplyBookmark(param.bookmark)
 
+		u.PrintLog(entity.LogParam{
+			Content: fmt.Sprintf("📚 Bookmark loaded : %s", param.bookmark.Name),
+			Type:    entity.LOG_INFO,
+		})
+
 		// Close the window
 		u.CloseModalDialog(param.wnd, *param.parentWnd)
 	})

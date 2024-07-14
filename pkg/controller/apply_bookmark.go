@@ -2,7 +2,6 @@ package controller
 
 import (
 	"chiko/pkg/entity"
-	"fmt"
 )
 
 func (c *Controller) ApplyBookmark(session entity.Session) {
@@ -18,10 +17,5 @@ func (c *Controller) ApplyBookmark(session entity.Session) {
 			})
 			return
 		}
-
-		c.PrintLog(entity.LogParam{
-			Content: fmt.Sprintf("📚 Bookmark loaded : %s", c.Conn.ServerURL),
-			Type:    entity.LOG_INFO,
-		})
 	}()
 }
