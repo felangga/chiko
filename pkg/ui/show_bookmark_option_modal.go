@@ -78,7 +78,7 @@ func (u *UI) populateBookmarkChoices(param populateBookmarkChoicesParam) {
 			buttons: []Button{
 				{
 					Name: "Yes",
-					OnClick: func() {
+					OnClick: func(wnd *winman.WindowBase) {
 						err := u.OverwriteBookmark(param.bookmark)
 						if err != nil {
 							u.PrintLog(entity.Log{
@@ -98,8 +98,8 @@ func (u *UI) populateBookmarkChoices(param populateBookmarkChoicesParam) {
 				},
 				{
 					Name: "No",
-					OnClick: func() {
-						u.CloseModalDialog(param.wnd, *param.parentWnd)
+					OnClick: func(wnd *winman.WindowBase) {
+						u.CloseModalDialog(wnd, *param.parentWnd)
 					},
 				},
 			},
@@ -113,7 +113,7 @@ func (u *UI) populateBookmarkChoices(param populateBookmarkChoicesParam) {
 			buttons: []Button{
 				{
 					Name: "Yes",
-					OnClick: func() {
+					OnClick: func(wnd *winman.WindowBase) {
 						err := u.DeleteBookmark(*param.bookmark)
 						if err != nil {
 							u.PrintLog(entity.Log{
@@ -133,7 +133,7 @@ func (u *UI) populateBookmarkChoices(param populateBookmarkChoicesParam) {
 				},
 				{
 					Name: "No",
-					OnClick: func() {
+					OnClick: func(wnd *winman.WindowBase) {
 						u.CloseModalDialog(param.wnd, *param.parentWnd)
 					},
 				},
@@ -151,9 +151,10 @@ func (u *UI) ApplyBookmark(session entity.Session) {
 		err := u.GRPC.CheckGRPC(u.GRPC.Conn.ServerURL)
 		if err != nil {
 			u.PrintLog(entity.Log{
-				Content: err.Error(),
+				Content: "❌ failed to connect to [blue]" + u.GRPC.Conn.ServerURL + " [red]" + err.Error(),
 				Type:    entity.LOG_ERROR,
 			})
+
 			return
 		}
 	}()

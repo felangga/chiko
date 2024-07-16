@@ -47,7 +47,7 @@ func (g *GRPC) CheckGRPC(serverURL string) error {
 	}
 	g.Conn.DescriptorSource = reflSource
 	log = entity.Log{
-		Content: "🤩 this server support server reflection",
+		Content: "✅ this server support server reflection",
 		Type:    entity.LOG_INFO,
 	}
 	log.DumpLogToChannel(g.LogChannel)

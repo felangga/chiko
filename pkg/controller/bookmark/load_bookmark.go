@@ -23,7 +23,7 @@ func (b *Bookmark) LoadBookmarks() error {
 
 	err = json.Unmarshal([]byte(file), &b.Categories)
 	if err != nil {
-		return fmt.Errorf("failed to read file, maybe corrupted")
+		return fmt.Errorf("failed to read file, maybe corrupted, error: %v", err)
 	}
 
 	return nil

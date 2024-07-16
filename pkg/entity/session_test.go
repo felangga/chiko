@@ -18,8 +18,12 @@ func TestParseMetadata(t *testing.T) {
 			name: "success, normal request",
 			session: entity.Session{
 				Name: "Session 1",
-				Metadata: map[string]string{
-					"name": "testing-name",
+				Metadata: []*entity.Metadata{
+					{
+						Active: true,
+						Key:    "Authorization",
+						Value:  "Bearer testing-token",
+					},
 				},
 				Authorization: &entity.Auth{
 					AuthType: entity.AuthTypeBearer,
@@ -39,9 +43,14 @@ func TestParseMetadata(t *testing.T) {
 			name: "success, no authorization",
 			session: entity.Session{
 				Name: "Session 1",
-				Metadata: map[string]string{
-					"name": "testing-name",
+				Metadata: []*entity.Metadata{
+					{
+						Active: true,
+						Key:    "Authorization",
+						Value:  "Bearer testing-token",
+					},
 				},
+
 				ServerURL:      "localhost:50051",
 				RequestPayload: "testing-payload",
 			},
