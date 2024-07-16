@@ -40,15 +40,25 @@ func (u *UI) ShowMetadataModal() {
 		cell := table.GetCell(row, col)
 		u.deleteMetadataModal(wnd, table, cell)
 	})
+
 	form.AddButton("Add Metadata", func() {
 		u.showAddMetadataModal(wnd, table)
+	}).SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		switch event.Key() {
+		case tcell.KeyTab:
+			if form.GetButton(form.GetButtonIndex("Add Metadata")).HasFocus() {
+				u.SetFocus(table)
+			}
+
+		}
+		return event
 	})
 
-	u.ShowMetadataModal_SetComponentActions(wnd, table)
+	u.ShowMetadataModal_SetComponentActions(wnd, table, form)
 	u.ShowMetadataModal_RefreshMetadataTable(table)
 }
 
-func (u *UI) ShowMetadataModal_SetComponentActions(wnd *winman.WindowBase, table *tview.Table) {
+func (u *UI) ShowMetadataModal_SetComponentActions(wnd *winman.WindowBase, table *tview.Table, form *tview.Form) {
 	table.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
 		case tcell.KeyEnter:
@@ -64,6 +74,9 @@ func (u *UI) ShowMetadataModal_SetComponentActions(wnd *winman.WindowBase, table
 
 		case tcell.KeyEscape:
 			u.CloseModalDialog(wnd, u.Layout.MenuList)
+			return nil
+		case tcell.KeyTab:
+			u.SetFocus(form)
 			return nil
 		}
 
