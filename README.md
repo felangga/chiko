@@ -19,7 +19,8 @@ brew install felangga/chiko/chiko
 - Bookmark support
 
 ## To Do
-- Add support for metadata (headers)
-- Add support to import `.proto` files for service that doesn't support server reflection
-- Add support for any kind of authorization types
+- ~Add support for metadata (headers)~
+- Add support to import `.proto` files for services that don't support server reflection
+- Add support for any authorization types
 - Add dump log to file feature
+- Add an option to protect or lock the bookmark library
