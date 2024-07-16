@@ -17,14 +17,18 @@ type Session struct {
 	AvailableMethods  []string                 `json:"-"`
 	RequestPayload    string                   `json:"request_payload"`
 	DescriptorSource  grpcurl.DescriptorSource `json:"-"`
-	Metadata          map[string]string        `json:"metadata"`
+	Metadata          []*Metadata              `json:"metadata"`
 }
 
 // ParseMetadata used to convert the metadata and authorization parameters to array of strings
 func (s *Session) ParseMetadata() []string {
+
+	// Convert metadata to array of strings
 	result := make([]string, 0, len(s.Metadata))
-	for k, v := range s.Metadata {
-		result = append(result, k+": "+v)
+	for _, v := range s.Metadata {
+		if v.Active {
+			result = append(result, v.Key+": "+v.Value)
+		}
 	}
 
 	// Add the authorization to header

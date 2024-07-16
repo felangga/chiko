@@ -10,7 +10,7 @@ import (
 
 type Button struct {
 	Name    string
-	OnClick func()
+	OnClick func(msgboxWnd *winman.WindowBase)
 }
 
 type ShowMessageBoxParam struct {
@@ -40,14 +40,14 @@ func (u *UI) ShowMessageBox(param ShowMessageBoxParam) {
 		fallbackFocus: u.Layout.MenuList,
 	})
 
-	u.ShowMessageBox_SetComponentActions(form, param.buttons)
+	u.ShowMessageBox_SetComponentActions(wnd, form, param.buttons)
 	u.ShowMessageBox_SetInputCapture(wnd, form)
 }
 
-func (u *UI) ShowMessageBox_SetComponentActions(form *tview.Form, buttons []Button) {
+func (u *UI) ShowMessageBox_SetComponentActions(wnd *winman.WindowBase, form *tview.Form, buttons []Button) {
 	// Populate buttons
 	for _, button := range buttons {
-		form.AddButton(button.Name, button.OnClick)
+		form.AddButton(button.Name, func() { button.OnClick(wnd) })
 	}
 }
 
