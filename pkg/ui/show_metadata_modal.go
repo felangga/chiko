@@ -36,6 +36,10 @@ func (u *UI) ShowMetadataModal() {
 	})
 
 	form.AddButton("Delete Metadata", func() {
+		if u.GRPC.Conn.Metadata == nil {
+			return
+		}
+
 		row, col := table.GetSelection()
 		cell := table.GetCell(row, col)
 		u.deleteMetadataModal(wnd, table, cell)
