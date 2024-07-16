@@ -2,9 +2,10 @@ package ui
 
 import (
 	"github.com/epiclabs-io/winman"
-	"github.com/felangga/chiko/pkg/entity"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
+
+	"github.com/felangga/chiko/pkg/entity"
 )
 
 func (u *UI) ShowSetServerURLModal() {
