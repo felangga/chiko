@@ -2,6 +2,7 @@ package ui
 
 import (
 	"github.com/epiclabs-io/winman"
+	"github.com/felangga/chiko/pkg/entity"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
@@ -31,7 +32,15 @@ func (u *UI) ShowSetServerURLModal_SetInputCapture(wnd *winman.WindowBase, inp *
 			return nil
 
 		case tcell.KeyEnter:
-			go u.GRPC.CheckGRPC(inp.GetText())
+			go func() {
+				err := u.GRPC.CheckGRPC(inp.GetText())
+				if err != nil {
+					u.PrintLog(entity.Log{
+						Content: "❌ failed to connect to [blue]" + inp.GetText() + " [red]" + err.Error(),
+						Type:    entity.LOG_ERROR,
+					})
+				}
+			}()
 
 			// Remove the window and restore focus to menu list
 			u.WinMan.RemoveWindow(wnd)
