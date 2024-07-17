@@ -49,6 +49,11 @@ func (u *UI) ShowMessageBox_SetComponentActions(wnd *winman.WindowBase, form *tv
 	for _, button := range buttons {
 		form.AddButton(button.Name, func() { button.OnClick(wnd) })
 	}
+
+	if (len(buttons)) > 0 {
+		// Set focus to the first button
+		form.SetFocus(1)
+	}
 }
 
 func (u *UI) ShowMessageBox_SetInputCapture(wnd *winman.WindowBase, parent *tview.Form) {

@@ -58,11 +58,21 @@ func (u *UI) ShowMetadataModal() {
 		return event
 	})
 
-	u.ShowMetadataModal_SetComponentActions(wnd, table, form)
+	u.ShowMetadataModal_SetInputCapture(wnd, table, form)
 	u.ShowMetadataModal_RefreshMetadataTable(table)
 }
 
-func (u *UI) ShowMetadataModal_SetComponentActions(wnd *winman.WindowBase, table *tview.Table, form *tview.Form) {
+func (u *UI) ShowMetadataModal_SetInputCapture(wnd *winman.WindowBase, table *tview.Table, form *tview.Form) {
+	wnd.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		switch event.Key() {
+		case tcell.KeyEscape:
+			u.CloseModalDialog(wnd, u.Layout.MenuList)
+			return nil
+		}
+
+		return event
+	})
+
 	table.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
 		case tcell.KeyEnter:
@@ -179,6 +189,14 @@ func (u *UI) showAddMetadataModal(parentWnd *winman.WindowBase, table *tview.Tab
 		fallbackFocus: parentWnd,
 	})
 
+	form.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		switch event.Key() {
+		case tcell.KeyEscape:
+			u.CloseModalDialog(wnd, parentWnd)
+		}
+		return event
+	})
+
 	form.AddButton("Cancel", func() {
 		u.CloseModalDialog(wnd, parentWnd)
 	})
@@ -193,7 +211,6 @@ func (u *UI) showAddMetadataModal(parentWnd *winman.WindowBase, table *tview.Tab
 
 		u.GRPC.Conn.Metadata = append(u.GRPC.Conn.Metadata, metadata)
 		u.ShowMetadataModal_RefreshMetadataTable(table)
-
 		u.CloseModalDialog(wnd, parentWnd)
 	})
 }
@@ -227,6 +244,14 @@ func (u *UI) showEditMetadataModal(parentWnd *winman.WindowBase, table *tview.Ta
 		resizeable:    false,
 		size:          winSize{0, 0, 50, 11},
 		fallbackFocus: parentWnd,
+	})
+
+	form.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		switch event.Key() {
+		case tcell.KeyEscape:
+			u.CloseModalDialog(wnd, parentWnd)
+		}
+		return event
 	})
 
 	form.AddButton("Cancel", func() {
