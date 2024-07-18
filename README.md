@@ -13,6 +13,18 @@ Currently `chiko` is not available on the `homebrew-core`, so you can install di
 brew install felangga/chiko/chiko
 ```
 
+### Go
+```
+go install github.com/felangga/chiko@latest
+```
+
+### Manual
+```
+git clone https://github.com/felangga/chiko
+cd chiko
+go run ./...
+```
+
 ## Features
 - List all gRPC methods using server reflections
 - Generate sample request payload 
@@ -24,3 +36,4 @@ brew install felangga/chiko/chiko
 - Add support for any authorization types
 - Add dump log to file feature
 - Add an option to protect or lock the bookmark library
+- Add support to import and export from and to `grpcurl` command
