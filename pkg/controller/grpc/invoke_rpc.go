@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/felangga/chiko/pkg/entity"
 	"github.com/fullstorydev/grpcurl"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -18,6 +19,18 @@ func (g *GRPC) InvokeRPC() error {
 	if g.Conn.ActiveConnection == nil {
 		return fmt.Errorf("❗ no active connection")
 	}
+
+	// Construct metadata info
+	var metadata string
+	for _, meta := range g.Conn.ParseMetadata() {
+		metadata += "- " + meta + "\n"
+	}
+
+	log := entity.Log{
+		Content: "\nRequest Metadata:\n" + metadata + "\nRequest Payload:\n[yellow]" + g.Conn.RequestPayload + "\n",
+		Type:    entity.LOG_INFO,
+	}
+	log.DumpLogToChannel(g.LogChannel)
 
 	options := grpcurl.FormatOptions{
 		EmitJSONDefaultFields: true,

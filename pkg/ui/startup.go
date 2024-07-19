@@ -19,8 +19,19 @@ func (u *UI) startupSequence() {
 }
 
 func (u *UI) loadBookmarks() {
+	// Before v.0.0.4, the default bookmark file location is at binary folder
+	// Thus we need to move the bookmark file to the new location to the OS default config folder
+	err := u.Bookmark.MigrateBookmark()
+	if err != nil {
+		u.PrintLog(entity.Log{
+			Content: fmt.Sprintf("❌ failed to migrate bookmarks, err: %v", err),
+			Type:    entity.LOG_ERROR,
+		})
+		return
+	}
+
 	// Load bookmarks from file
-	err := u.Bookmark.LoadBookmarks()
+	err = u.Bookmark.LoadBookmarks()
 	if err != nil {
 		u.PrintLog(entity.Log{
 			Content: fmt.Sprintf("❌ failed to load bookmarks, err: %v", err),
