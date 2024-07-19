@@ -17,7 +17,7 @@ func NewBookmark() Bookmark {
 
 	b := Bookmark{
 		&category,
-		filepath.Join(GetOSConfigDir(), "chiko", entity.BOOKMARKS_FILE_NAME),
+		filepath.Join(GetOSConfigDir(), "Chiko", entity.BOOKMARKS_FILE_NAME),
 	}
 
 	return b
