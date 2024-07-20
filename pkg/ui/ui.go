@@ -15,6 +15,7 @@ type ComponentLayout struct {
 	MenuList     *tview.List
 	BookmarkList *tview.TreeView
 	LogList      *tview.TextView
+	OutputPanel  *tview.TextArea
 }
 
 type UI struct {
@@ -66,6 +67,7 @@ func NewUI() UI {
 		MenuList:     ui.InitSidebarMenu(),
 		BookmarkList: ui.InitBookmarkMenu(),
 		LogList:      ui.InitLogList(),
+		OutputPanel:  ui.InitOutputPanel(),
 	}
 
 	window := wm.NewWindow().
@@ -98,9 +100,13 @@ func (u *UI) setupAppLayout() *tview.Flex {
 		AddItem(u.Layout.MenuList, 15, 1, true).
 		AddItem(u.Layout.BookmarkList, 0, 1, false)
 
+	splitMainPanel := tview.NewFlex().SetDirection(tview.FlexRow).
+		AddItem(u.Layout.LogList, 0, 1, false).
+		AddItem(u.Layout.OutputPanel, 0, 3, false)
+
 	childLayout := tview.NewFlex().SetDirection(tview.FlexColumn).
 		AddItem(splitSidebar, 35, 1, true).
-		AddItem(u.Layout.LogList, 0, 4, false)
+		AddItem(splitMainPanel, 0, 4, false)
 
 	layout := tview.NewFlex().SetDirection(tview.FlexRow).
 		AddItem(setupAppTitle(), 3, 1, false).
