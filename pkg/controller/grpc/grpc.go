@@ -12,6 +12,8 @@ type GRPC struct {
 	Ctx        context.Context
 	Conn       *entity.Session
 	LogChannel chan entity.Log
+
+	IsSecure bool
 }
 
 // NewGRPC is used to create a new grpc object
@@ -26,6 +28,7 @@ func NewGRPC(logChannel chan entity.Log) GRPC {
 		context.Background(),
 		&conn,
 		logChannel,
+		false,
 	}
 
 	return g
