@@ -202,6 +202,8 @@ func (u *UI) OverwriteBookmark(b *entity.Session) error {
 		for j, session := range category.Sessions {
 			if session.ID == b.ID {
 				category.Sessions[j] = *u.GRPC.Conn
+				category.Sessions[j].Name = session.Name
+
 				return u.Bookmark.SaveBookmark()
 			}
 		}
