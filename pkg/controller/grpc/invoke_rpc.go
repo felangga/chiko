@@ -1,6 +1,7 @@
 package grpc
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -12,6 +13,9 @@ import (
 
 // InvokeRPC will invoke the configured payload and try to hit the server with it
 func (g *GRPC) InvokeRPC() error {
+	context, timeout := context.WithTimeout(context.Background(), GRPC_TIMEOUT)
+	defer timeout()
+
 	if g.Conn.SelectedMethod == nil {
 		return fmt.Errorf("❗ no method selected")
 	}
@@ -51,7 +55,7 @@ func (g *GRPC) InvokeRPC() error {
 	}
 
 	err = grpcurl.InvokeRPC(
-		g.Ctx,
+		context,
 		g.Conn.DescriptorSource,
 		g.Conn.ActiveConnection,
 		*g.Conn.SelectedMethod,

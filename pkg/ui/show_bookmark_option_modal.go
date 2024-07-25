@@ -148,7 +148,7 @@ func (u *UI) ApplyBookmark(session entity.Session) {
 	*u.GRPC.Conn = session
 
 	go func() {
-		err := u.GRPC.CheckGRPC(u.GRPC.Conn.ServerURL)
+		err := u.GRPC.Connect(u.GRPC.Conn.ServerURL)
 		if err != nil {
 			u.PrintLog(entity.Log{
 				Content: "❌ failed to connect to [blue]" + u.GRPC.Conn.ServerURL + " [red]" + err.Error(),
@@ -202,6 +202,8 @@ func (u *UI) OverwriteBookmark(b *entity.Session) error {
 		for j, session := range category.Sessions {
 			if session.ID == b.ID {
 				category.Sessions[j] = *u.GRPC.Conn
+				category.Sessions[j].Name = session.Name
+
 				return u.Bookmark.SaveBookmark()
 			}
 		}
