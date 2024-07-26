@@ -15,7 +15,7 @@ type ComponentLayout struct {
 	MenuList     *tview.List
 	BookmarkList *tview.TreeView
 	LogList      *tview.TextView
-	OutputPanel  *tview.Flex
+	OutputPanel  *tview.Table
 }
 
 type UI struct {
@@ -23,9 +23,10 @@ type UI struct {
 	WinMan *winman.Manager
 	Layout *ComponentLayout
 
-	GRPC       *grpc.GRPC
-	Bookmark   *bookmark.Bookmark
-	LogChannel chan entity.Log
+	GRPC          *grpc.GRPC
+	Bookmark      *bookmark.Bookmark
+	LogChannel    chan entity.Log
+	OutputChannel chan entity.Log
 
 	Theme *entity.Theme
 }
@@ -47,10 +48,11 @@ func (u UI) QuitApplication() {
 
 func NewUI() UI {
 	log := make(chan entity.Log)
+	output := make(chan entity.Log)
 
 	app := tview.NewApplication()
 	wm := winman.NewWindowManager()
-	grpc := grpc.NewGRPC(log)
+	grpc := grpc.NewGRPC(log, output)
 	bookmark := bookmark.NewBookmark()
 
 	ui := UI{
@@ -60,6 +62,7 @@ func NewUI() UI {
 		&grpc,
 		&bookmark,
 		log,
+		output,
 		&entity.TerminalTheme,
 	}
 

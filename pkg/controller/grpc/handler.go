@@ -45,7 +45,7 @@ func (h *handler) OnReceiveResponse(msg proto.Message) {
 			Content: fmt.Sprintf("failed to generate JSON form of response message: %v", err),
 			Type:    entity.LOG_ERROR,
 		}
-		log.DumpLogToChannel(h.grpc.LogChannel)
+		log.DumpLogToChannel(h.grpc.OutputChannel)
 
 		return
 	}
@@ -55,7 +55,7 @@ func (h *handler) OnReceiveResponse(msg proto.Message) {
 		Content: output,
 		Type:    entity.LOG_INFO,
 	}
-	log.DumpLogToChannel(h.grpc.LogChannel)
+	log.DumpLogToChannel(h.grpc.OutputChannel)
 }
 
 func (h *handler) OnResolveMethod(md *desc.MethodDescriptor) {

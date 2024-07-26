@@ -9,7 +9,13 @@ require (
 	github.com/google/go-cmp v0.6.0
 	github.com/jhump/protoreflect v1.16.0
 	github.com/rivo/tview v0.0.0-20240101144852-b3bd1aa5e9f2
+	github.com/uaraven/logview v0.1.0
 	google.golang.org/grpc v1.61.0
+)
+
+require (
+	github.com/dlclark/regexp2 v1.4.0 // indirect
+	gitlab.com/tslocum/cbind v0.1.4 // indirect
 )
 
 require (

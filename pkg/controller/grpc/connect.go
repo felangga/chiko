@@ -8,8 +8,8 @@ import (
 	"github.com/felangga/chiko/pkg/entity"
 )
 
-// CheckGRPC will check if the server supports server reflection and list all available services and methods
-func (g *GRPC) CheckGRPC(serverURL string) error {
+// Connect will connect to the server and try to get the available services and methods
+func (g *GRPC) Connect(serverURL string) error {
 	g.Conn.ServerURL = serverURL
 
 	// Close active connection if we are going to connect to another server

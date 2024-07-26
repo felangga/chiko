@@ -26,3 +26,9 @@ func (u *UI) PrintLog(param entity.Log) {
 	// Scroll log window to bottom
 	u.Layout.LogList.ScrollToEnd()
 }
+
+// PrintOutput used to print output to the output panel
+func (u *UI) PrintOutput(param entity.Log) {
+	// u.Layout.OutputPanel.Buf.Insert(u.Layout.OutputPanel.Cursor.Loc, param.Content)
+
+}

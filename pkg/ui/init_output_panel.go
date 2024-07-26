@@ -1,52 +1,61 @@
 package ui
 
 import (
+	"time"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
 
 // InitOutputPanel initializes the output panel on the main screen
-func (u *UI) InitOutputPanel() *tview.Flex {
-	outPanel := tview.NewTextArea()
-	outPanel.SetTitle(" ⚙️ Output ")
-	outPanel.SetWordWrap(true)
-	outPanel.SetBorderPadding(1, 1, 1, 1)
-	outPanel.SetMaxLength(1)
+func (u *UI) InitOutputPanel() *tview.Table {
 
-	// buttonPanel := u.buttonPanel()
+	output := tview.NewTable()
+	//	output.SetBorders(true)
+	output.SetTitle(" ⚙️ Output ").SetBorder(true)
+	output.SetSelectable(true, false)
+	output.SetSeparator(tview.Borders.Vertical)
 
-	layout := tview.NewFlex()
-	layout.SetDirection(tview.FlexRow)
-	layout.AddItem(outPanel, 0, 1, false)
-	// layout.AddItem(buttonPanel, 0, 1, false)
-	layout.SetTitle(" Output ")
-	layout.SetBorder(true)
+	// Set headers
+	output.SetCell(0, 0, tview.NewTableCell("Created At").
+		SetTextColor(tcell.ColorYellow).
+		SetAlign(tview.AlignCenter).
+		SetExpansion(1).
+		SetSelectable(false))
 
-	u.InitOutputPanel_SetInputCapture(outPanel)
+	output.SetCell(0, 1, tview.NewTableCell("Log").
+		SetTextColor(tcell.ColorYellow).
+		SetAlign(tview.AlignCenter).
+		SetExpansion(3).
+		SetSelectable(false))
 
-	return layout
-}
+	output.SetCell(1, 0, tview.NewTableCell(time.Now().Format(time.RFC3339)).
+		SetTextColor(tcell.ColorYellow).
+		SetAlign(tview.AlignLeft).
+		SetExpansion(1).
+		SetSelectable(true))
 
-func (u *UI) buttonPanel() *tview.Grid {
-	btnClearLog := tview.NewButton("Clear Log")
-	btnClearLog.SetSelectedFunc(func() {
-		u.Layout.LogList.SetText("...")
-	})
+	output.SetCell(1, 1, tview.NewTableCell(`the quick brown fox jumps over the lazy dog. 
+	the quick brown fox jumps over the lazy dog. the quick brown fox jumps over the lazy dog.`).
+		SetTextColor(tcell.ColorWhite).
+		SetAlign(tview.AlignLeft).
+		SetExpansion(3).
+		SetSelectable(true).
+		SetMaxWidth(5))
 
-	btnCopyClipboard := tview.NewButton("Copy to Clipboard")
+	output.SetCell(2, 0, tview.NewTableCell(time.Now().Format(time.RFC3339)).
+		SetTextColor(tcell.ColorYellow).
+		SetAlign(tview.AlignLeft).
+		SetExpansion(1).
+		SetSelectable(true))
 
-	btnCopyClipboard.SetSelectedFunc(func() {
-		// Copy to clipboard
-	})
+	output.SetCell(2, 1, tview.NewTableCell("the quick brown fox jumps over the lazy dog. the quick brown fox jumps over the lazy dog. the quick brown fox jumps over the lazy dog.").
+		SetTextColor(tcell.ColorWhite).
+		SetAlign(tview.AlignLeft).
+		SetExpansion(3).
+		SetSelectable(true))
 
-	buttonPanel := tview.NewGrid()
-	buttonPanel.SetColumns(0, 0, 0)
-	buttonPanel.SetRows(5)
-	buttonPanel.SetBorderPadding(1, 1, 1, 1)
-
-	buttonPanel.AddItem(btnClearLog, 0, 0, 1, 1, 0, 0, false)
-	buttonPanel.AddItem(btnCopyClipboard, 0, 1, 1, 1, 0, 0, false)
-	return buttonPanel
+	return output
 }
 
 func (u *UI) InitOutputPanel_SetInputCapture(outPanel *tview.TextArea) {

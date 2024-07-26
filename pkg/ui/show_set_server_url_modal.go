@@ -34,7 +34,7 @@ func (u *UI) ShowSetServerURLModal_SetInputCapture(wnd *winman.WindowBase, inp *
 
 		case tcell.KeyEnter:
 			go func() {
-				err := u.GRPC.CheckGRPC(inp.GetText())
+				err := u.GRPC.Connect(inp.GetText())
 				if err != nil {
 					u.PrintLog(entity.Log{
 						Content: "❌ failed to connect to [blue]" + inp.GetText() + " [red]" + err.Error(),

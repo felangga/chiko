@@ -85,8 +85,8 @@ func (u *UI) ShowRequestPayloadModal_SetComponentActions(wnd *winman.WindowBase,
 		u.GRPC.Conn.RequestPayload = txtPayload.GetText()
 
 		// Remove the window and restore focus to menu list
-		u.PrintLog(entity.Log{
-			Content: "\nRequest Payload:\n[yellow]" + u.GRPC.Conn.RequestPayload,
+		u.PrintOutput(entity.Log{
+			Content: "\nRequest Payload:\n" + u.GRPC.Conn.RequestPayload,
 			Type:    entity.LOG_INFO,
 		})
 		u.CloseModalDialog(wnd, u.Layout.MenuList)

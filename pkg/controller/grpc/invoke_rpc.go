@@ -4,20 +4,17 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/felangga/chiko/pkg/entity"
 	"github.com/fullstorydev/grpcurl"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	"github.com/felangga/chiko/pkg/entity"
 )
 
 // InvokeRPC will invoke the configured payload and try to hit the server with it
 func (g *GRPC) InvokeRPC() error {
-	if g.Conn.SelectedMethod == nil {
-		return fmt.Errorf("❗ no method selected")
-	}
-
-	if g.Conn.ActiveConnection == nil {
-		return fmt.Errorf("❗ no active connection")
+	if g.Conn.SelectedMethod == nil || g.Conn.ActiveConnection == nil {
+		return fmt.Errorf("no method selected or no active connection")
 	}
 
 	// Construct metadata info
@@ -30,7 +27,7 @@ func (g *GRPC) InvokeRPC() error {
 		Content: "\nRequest Metadata:\n" + metadata + "\nRequest Payload:\n[yellow]" + g.Conn.RequestPayload + "\n",
 		Type:    entity.LOG_INFO,
 	}
-	log.DumpLogToChannel(g.LogChannel)
+	log.DumpLogToChannel(g.OutputChannel)
 
 	options := grpcurl.FormatOptions{
 		EmitJSONDefaultFields: true,

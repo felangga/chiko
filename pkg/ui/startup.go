@@ -78,6 +78,8 @@ func (u *UI) logDumper() {
 			select {
 			case log := <-u.LogChannel:
 				u.PrintLog(log)
+			case output := <-u.OutputChannel:
+				u.PrintOutput(output)
 			}
 		}
 	}()

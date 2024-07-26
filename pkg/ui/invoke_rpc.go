@@ -1,16 +1,33 @@
 package ui
 
 import (
-	"fmt"
-
 	"github.com/felangga/chiko/pkg/entity"
 )
 
 func (u *UI) InvokeRPC() {
+	// Check if any method is selected
+	if u.GRPC.Conn.SelectedMethod == nil {
+		u.PrintLog(entity.Log{
+			Content: "❗ no method selected",
+			Type:    entity.LOG_ERROR,
+		})
+		return
+	}
+
+	// Check if there is no active connection
+	if u.GRPC.Conn.ActiveConnection == nil {
+		u.PrintLog(entity.Log{
+			Content: "❗ no active connection",
+			Type:    entity.LOG_ERROR,
+		})
+		return
+	}
+
+	// Invoke the RPC
 	err := u.GRPC.InvokeRPC()
 	if err != nil {
-		u.PrintLog(entity.Log{
-			Content: fmt.Sprintf("❌ failed to invoke RPC, err: %v", err),
+		u.PrintOutput(entity.Log{
+			Content: err.Error(),
 			Type:    entity.LOG_ERROR,
 		})
 		return
