@@ -15,7 +15,7 @@ type ComponentLayout struct {
 	MenuList     *tview.List
 	BookmarkList *tview.TreeView
 	LogList      *tview.TextView
-	OutputPanel  *tview.Table
+	OutputPanel  InitOutputPanelComponents
 }
 
 type UI struct {
@@ -26,7 +26,7 @@ type UI struct {
 	GRPC          *grpc.GRPC
 	Bookmark      *bookmark.Bookmark
 	LogChannel    chan entity.Log
-	OutputChannel chan entity.Log
+	OutputChannel chan entity.Output
 
 	Theme *entity.Theme
 }
@@ -38,7 +38,8 @@ func (u *UI) SetFocus(p tview.Primitive) {
 }
 
 func (u UI) Run() error {
-	u.App.EnableMouse(true)
+	u.App.
+		EnableMouse(true)
 	return u.App.Run()
 }
 
@@ -48,7 +49,7 @@ func (u UI) QuitApplication() {
 
 func NewUI() UI {
 	log := make(chan entity.Log)
-	output := make(chan entity.Log)
+	output := make(chan entity.Output)
 
 	app := tview.NewApplication()
 	wm := winman.NewWindowManager()
@@ -98,13 +99,14 @@ func setupAppTitle() *tview.TextView {
 
 // setupAppLayout sets up the main grid layout of the application.
 func (u *UI) setupAppLayout() *tview.Flex {
+
 	// Setup the main layout
 	splitSidebar := tview.NewFlex().SetDirection(tview.FlexRow).
 		AddItem(u.Layout.MenuList, 15, 1, true).
 		AddItem(u.Layout.BookmarkList, 0, 1, false)
 
 	splitMainPanel := tview.NewFlex().SetDirection(tview.FlexRow).
-		AddItem(u.Layout.OutputPanel, 0, 3, false).
+		AddItem(u.Layout.OutputPanel.Layout, 0, 3, false).
 		AddItem(u.Layout.LogList, 0, 1, false)
 
 	childLayout := tview.NewFlex().SetDirection(tview.FlexColumn).

@@ -41,21 +41,24 @@ func (h *handler) OnReceiveResponse(msg proto.Message) {
 	jsm := jsonpb.Marshaler{Indent: "  "}
 	respStr, err := jsm.MarshalToString(msg)
 	if err != nil {
-		log := entity.Log{
-			Content: fmt.Sprintf("failed to generate JSON form of response message: %v", err),
-			Type:    entity.LOG_ERROR,
+		output := entity.Output{
+			Content:        fmt.Sprintf("failed to generate JSON form of response message: %v", err),
+			ShowTimeHeader: false,
 		}
-		log.DumpLogToChannel(h.grpc.OutputChannel)
+		output.DumpLogToChannel(h.grpc.OutputChannel)
 
 		return
 	}
+
 	h.respMessages = append(h.respMessages, respStr)
-	output := fmt.Sprintf("\n%s\n\n%s\n[yellow]%s", headerResp, statusCode, respStr)
-	log := entity.Log{
-		Content: output,
-		Type:    entity.LOG_INFO,
+	output := fmt.Sprintf("\n%s\n\n%s\n%s", headerResp, statusCode, respStr)
+	out := entity.Output{
+		Content:        output,
+		ShowTimeHeader: false,
 	}
-	log.DumpLogToChannel(h.grpc.OutputChannel)
+
+	out.DumpLogToChannel(h.grpc.OutputChannel)
+
 }
 
 func (h *handler) OnResolveMethod(md *desc.MethodDescriptor) {

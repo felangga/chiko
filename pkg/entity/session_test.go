@@ -25,17 +25,11 @@ func TestParseMetadata(t *testing.T) {
 						Value:  "Bearer testing-token",
 					},
 				},
-				Authorization: &entity.Auth{
-					AuthType: entity.AuthTypeBearer,
-					BearerToken: &entity.AuthValueBearerToken{
-						Token: "testing-token",
-					},
-				},
+				Authorization:  &entity.Auth{},
 				ServerURL:      "localhost:50051",
 				RequestPayload: "testing-payload",
 			},
 			expected: []string{
-				"name: testing-name",
 				"Authorization: Bearer testing-token",
 			},
 		},
@@ -46,11 +40,10 @@ func TestParseMetadata(t *testing.T) {
 				Metadata: []*entity.Metadata{
 					{
 						Active: true,
-						Key:    "Authorization",
-						Value:  "Bearer testing-token",
+						Key:    "name",
+						Value:  "testing-name",
 					},
 				},
-
 				ServerURL:      "localhost:50051",
 				RequestPayload: "testing-payload",
 			},
@@ -70,11 +63,13 @@ func TestParseMetadata(t *testing.T) {
 	}
 
 	for _, tc := range test {
-		parsed := tc.session.ParseMetadata()
+		t.Run(tc.name, func(t *testing.T) {
+			parsed := tc.session.ParseMetadata()
 
-		if diff := cmp.Diff(tc.expected, parsed); diff != "" {
-			t.Fatal(diff)
-		}
+			if diff := cmp.Diff(tc.expected, parsed); diff != "" {
+				t.Fatal(diff)
+			}
+		})
 	}
 
 }

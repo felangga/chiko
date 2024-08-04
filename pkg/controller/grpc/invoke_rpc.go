@@ -23,11 +23,11 @@ func (g *GRPC) InvokeRPC() error {
 		metadata += "- " + meta + "\n"
 	}
 
-	log := entity.Log{
-		Content: "\nRequest Metadata:\n" + metadata + "\nRequest Payload:\n[yellow]" + g.Conn.RequestPayload + "\n",
-		Type:    entity.LOG_INFO,
+	out := entity.Output{
+		Content:        "\nRequest Metadata:\n" + metadata + "\nRequest Payload:\n" + g.Conn.RequestPayload + "\n",
+		ShowTimeHeader: true,
 	}
-	log.DumpLogToChannel(g.OutputChannel)
+	out.DumpLogToChannel(g.OutputChannel)
 
 	options := grpcurl.FormatOptions{
 		EmitJSONDefaultFields: true,
@@ -68,7 +68,6 @@ func (g *GRPC) InvokeRPC() error {
 		formattedStatus, err := formatter(h.respStatus.Proto())
 		if err != nil {
 			return err
-
 		}
 
 		return fmt.Errorf(formattedStatus)

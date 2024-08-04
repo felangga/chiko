@@ -26,9 +26,9 @@ func (u *UI) InvokeRPC() {
 	// Invoke the RPC
 	err := u.GRPC.InvokeRPC()
 	if err != nil {
-		u.PrintOutput(entity.Log{
-			Content: err.Error(),
-			Type:    entity.LOG_ERROR,
+		u.PrintOutput(entity.Output{
+			Content:        err.Error(),
+			ShowTimeHeader: false,
 		})
 		return
 	}
