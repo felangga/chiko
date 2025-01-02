@@ -8,7 +8,6 @@ import (
 
 // LoadBookmarks is used to load bookmarks from bookmark file
 func (b *Bookmark) LoadBookmarks() error {
-
 	if _, err := os.Stat(b.Path); err != nil {
 		// If no bookmarks file found, then create a new one
 		if err := b.SaveBookmark(); err != nil {

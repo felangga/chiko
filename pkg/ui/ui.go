@@ -8,6 +8,7 @@ import (
 
 	"github.com/felangga/chiko/pkg/controller/bookmark"
 	"github.com/felangga/chiko/pkg/controller/grpc"
+	"github.com/felangga/chiko/pkg/controller/storage"
 	"github.com/felangga/chiko/pkg/entity"
 )
 
@@ -25,6 +26,7 @@ type UI struct {
 
 	GRPC          *grpc.GRPC
 	Bookmark      *bookmark.Bookmark
+	Storage       *storage.Storage
 	LogChannel    chan entity.Log
 	OutputChannel chan entity.Output
 
@@ -55,6 +57,7 @@ func NewUI() UI {
 	wm := winman.NewWindowManager()
 	grpc := grpc.NewGRPC(log, output)
 	bookmark := bookmark.NewBookmark()
+	storage := storage.NewStorage()
 
 	ui := UI{
 		app,
@@ -62,6 +65,7 @@ func NewUI() UI {
 		nil,
 		&grpc,
 		&bookmark,
+		&storage,
 		log,
 		output,
 		&entity.TerminalTheme,

@@ -5,9 +5,10 @@ import (
 	"time"
 
 	"github.com/atotto/clipboard"
-	"github.com/felangga/chiko/pkg/entity"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
+
+	"github.com/felangga/chiko/pkg/entity"
 )
 
 type InitOutputPanelComponents struct {
@@ -23,7 +24,7 @@ var (
 // InitOutputPanel initializes the output panel on the main screen
 func (u *UI) InitOutputPanel() InitOutputPanelComponents {
 	output := tview.NewTextArea()
-	output.SetWrap(true)
+	output.SetWrap(false)
 	output.SetMaxLength(1)
 	output.SetTextStyle(tcell.StyleDefault.
 		Foreground(tcell.ColorGreen))
@@ -46,33 +47,29 @@ func (u *UI) InitOutputPanel() InitOutputPanelComponents {
 
 func (u *UI) initOutputPanel_handleTextArea(textarea *tview.TextArea) {
 	commands = map[string]Commands{
+		"selectall": {
+			KeyComb:    'a',
+			CommandKey: "A",
+			Text:       "Select All",
+			OnExecute: func() {
+				u.doSelectAll(textarea)
+			},
+		},
 		"copy": {
 			KeyComb:    'c',
 			CommandKey: "C",
 			Text:       "Copy",
 			OnExecute: func() {
-				textArea := u.Layout.OutputPanel.TextArea
-
-				text, _, _ := textArea.GetSelection()
-				if err := clipboard.WriteAll(text); err != nil {
-					u.PrintLog(entity.Log{
-						Content: "❌ failed to copied to clipboard",
-						Type:    entity.LOG_INFO,
-					})
-					return
-				}
-
-				u.PrintLog(entity.Log{
-					Content: "📋 Copied to clipboard",
-					Type:    entity.LOG_INFO,
-				})
+				u.doCopyText(textarea)
 			},
 		},
 		"writefile": {
 			KeyComb:    'w',
 			CommandKey: "W",
-			Text:       "Write To File",
-			OnExecute:  func() {},
+			Text:       "Dump To File",
+			OnExecute: func() {
+				u.doWriteToFile(textarea)
+			},
 		},
 	}
 
@@ -98,6 +95,86 @@ func (u *UI) initOutputPanel_handleTextArea(textarea *tview.TextArea) {
 	})
 }
 
+// doCopyText copy text selected from the output window to clipboard
+func (u *UI) doCopyText(textarea *tview.TextArea) {
+	text, _, _ := textarea.GetSelection()
+	if text == "" {
+		u.PrintLog(entity.Log{
+			Content: "❌ no text selected",
+			Type:    entity.LOG_INFO,
+		})
+		return
+	}
+
+	if err := clipboard.WriteAll(text); err != nil {
+		u.PrintLog(entity.Log{
+			Content: "❌ failed to copied to clipboard",
+			Type:    entity.LOG_INFO,
+		})
+		return
+	}
+
+	u.PrintLog(entity.Log{
+		Content: fmt.Sprintf("📋 %.2f kB copied to clipboard", float64(len(text))/1024),
+		Type:    entity.LOG_INFO,
+	})
+}
+
+func (u *UI) doSelectAll(textarea *tview.TextArea) {
+	textarea.Select(0, textarea.GetTextLength())
+}
+
+func (u *UI) doWriteToFile(textarea *tview.TextArea) {
+	// Show dialog box so user can input the file path
+	dir, err := u.Storage.GetWorkingDirectory()
+	if err != nil {
+		u.PrintLog(entity.Log{
+			Content: "❌ failed to get working directory",
+			Type:    entity.LOG_ERROR,
+		})
+		return
+	}
+
+	txtPath := tview.NewInputField().SetText(dir + "/" + u.GRPC.Conn.ServerURL + ".txt")
+	txtPath.SetFieldBackgroundColor(u.Theme.Colors.WindowColor)
+	wnd := u.CreateModalDialog(CreateModalDiaLog{
+		title:      " 💾 Enter File Path ",
+		draggable:  false,
+		resizeable: false,
+		size: winSize{
+			x:      0,
+			y:      0,
+			width:  50,
+			height: 1,
+		},
+		rootView:      txtPath,
+		fallbackFocus: u.Layout.MenuList,
+	})
+
+	txtPath.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		switch event.Key() {
+		case tcell.KeyEscape:
+			u.CloseModalDialog(wnd, u.Layout.MenuList)
+		case tcell.KeyEnter:
+			if err := u.Storage.SaveToFile(txtPath.GetText(), []byte(textarea.GetText())); err != nil {
+				u.PrintLog(entity.Log{
+					Content: "❌ failed to write to file: " + err.Error(),
+					Type:    entity.LOG_ERROR,
+				})
+				return nil
+			}
+			// Remove the window and restore focus to menu list
+			defer u.CloseModalDialog(wnd, u.Layout.MenuList)
+			u.PrintLog(entity.Log{
+				Content: "✅ file saved successfully: " + txtPath.GetText(),
+				Type:    entity.LOG_INFO,
+			})
+		}
+		return event
+	})
+
+}
+
 type Commands struct {
 	KeyComb    rune
 	CommandKey string
@@ -106,7 +183,6 @@ type Commands struct {
 }
 
 func (u *UI) initOutputPanel_PanelBar() *tview.TextView {
-
 	// Init Panel bar
 	info := tview.NewTextView()
 	info.SetDynamicColors(true)
