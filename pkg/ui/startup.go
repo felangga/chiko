@@ -16,6 +16,12 @@ func (u *UI) startupSequence() {
 
 	u.loadBookmarks()
 	u.logDumper()
+
+	// u.PrintOutput(entity.Output{
+	// 	Content:        entity.BANNER,
+	// 	ShowTimeHeader: false,
+	// 	WithHeader:     false,
+	// })
 }
 
 func (u *UI) loadBookmarks() {
