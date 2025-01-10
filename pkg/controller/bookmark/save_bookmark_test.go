@@ -5,8 +5,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/felangga/chiko/pkg/entity"
 	"github.com/google/uuid"
+
+	"github.com/felangga/chiko/pkg/entity"
 )
 
 func TestSaveBookmark(t *testing.T) {

@@ -40,8 +40,7 @@ func (u *UI) SetFocus(p tview.Primitive) {
 }
 
 func (u UI) Run() error {
-	u.App.
-		EnableMouse(true)
+	u.App.EnableMouse(true)
 	return u.App.Run()
 }
 
