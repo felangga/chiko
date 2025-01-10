@@ -14,10 +14,5 @@ func (b Bookmark) SaveBookmark() error {
 	}
 
 	// Saving the json to file
-	err = os.WriteFile(b.Path, convert, 0644)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return os.WriteFile(b.Path, convert, 0644)
 }

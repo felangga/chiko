@@ -30,6 +30,10 @@ func (u *UI) ShowSetRequestMethodModal() {
 	listMethods.SetBorderPadding(1, 0, 0, 0)
 	listMethods.SetBackgroundColor(u.Theme.Colors.WindowColor)
 
+	st := tcell.StyleDefault
+	listMethods.SetMainTextStyle(st.Background(u.Theme.Colors.WindowColor).Foreground(tcell.ColorWhite))
+	listMethods.SetShortcutStyle(st.Background(u.Theme.Colors.WindowColor).Foreground(tcell.ColorYellow))
+
 	txtSearch := tview.NewInputField().
 		SetText("").
 		SetPlaceholder(" 🔍 Search methods...").

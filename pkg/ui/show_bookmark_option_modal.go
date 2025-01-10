@@ -17,6 +17,10 @@ func (u UI) ShowBookmarkOptionsModal(parentWnd tview.Primitive, bookmark *entity
 	listOptions.ShowSecondaryText(false)
 	listOptions.SetBackgroundColor(u.Theme.Colors.WindowColor)
 
+	st := tcell.StyleDefault
+	listOptions.SetMainTextStyle(st.Background(u.Theme.Colors.WindowColor).Foreground(tcell.ColorWhite))
+	listOptions.SetShortcutStyle(st.Background(u.Theme.Colors.WindowColor).Foreground(tcell.ColorYellow))
+
 	wnd := u.CreateModalDialog(CreateModalDiaLog{
 		title:         " 📚 Bookmark Options ",
 		rootView:      listOptions,
@@ -148,7 +152,7 @@ func (u *UI) ApplyBookmark(session entity.Session) {
 	*u.GRPC.Conn = session
 
 	go func() {
-		err := u.GRPC.CheckGRPC(u.GRPC.Conn.ServerURL)
+		err := u.GRPC.Connect(u.GRPC.Conn.ServerURL)
 		if err != nil {
 			u.PrintLog(entity.Log{
 				Content: "❌ failed to connect to [blue]" + u.GRPC.Conn.ServerURL + " [red]" + err.Error(),

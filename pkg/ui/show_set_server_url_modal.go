@@ -9,7 +9,7 @@ import (
 )
 
 func (u *UI) ShowSetServerURLModal() {
-	txtServerURL := tview.NewInputField().SetText(u.GRPC.Conn.ServerURL)
+	txtServerURL := tview.NewInputField().SetText(u.GRPC.Conn.ServerURL).SetFieldWidth(255)
 	txtServerURL.SetFieldBackgroundColor(u.Theme.Colors.WindowColor)
 
 	wnd := u.CreateModalDialog(CreateModalDiaLog{
@@ -21,6 +21,7 @@ func (u *UI) ShowSetServerURLModal() {
 	})
 
 	u.ShowSetServerURLModal_SetInputCapture(wnd, txtServerURL)
+
 }
 
 // ShowSetServerURLModal_SetInputCapture handle the input capture from keyboard
@@ -34,7 +35,7 @@ func (u *UI) ShowSetServerURLModal_SetInputCapture(wnd *winman.WindowBase, inp *
 
 		case tcell.KeyEnter:
 			go func() {
-				err := u.GRPC.CheckGRPC(inp.GetText())
+				err := u.GRPC.Connect(inp.GetText())
 				if err != nil {
 					u.PrintLog(entity.Log{
 						Content: "❌ failed to connect to [blue]" + inp.GetText() + " [red]" + err.Error(),

@@ -11,6 +11,7 @@ type ColorValue struct {
 	ButtonColor      tcell.Color
 	FieldColor       tcell.Color
 	PlaceholderColor tcell.Color
+	CommandBarColor  tcell.Color
 }
 
 type Theme struct {
@@ -30,6 +31,7 @@ var (
 			ButtonColor:      tcell.GetColor("#5500FF"),
 			FieldColor:       tcell.GetColor("#111111"),
 			PlaceholderColor: tcell.GetColor("#666666"),
+			CommandBarColor:  tcell.GetColor("#333333"),
 		},
 	}
 )

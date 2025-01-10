@@ -42,6 +42,7 @@ func (u *UI) ShowRequestPayloadModal() {
 	form.SetFieldBackgroundColor(u.Theme.Colors.FieldColor)
 	form.AddFormItem(txtPayload)
 	form.SetButtonsAlign(tview.AlignRight)
+	form.SetButtonBackgroundColor(u.Theme.Colors.ButtonColor)
 
 	wnd := u.CreateModalDialog(CreateModalDiaLog{
 		title:         " 📦 Request Payload ",
@@ -83,13 +84,6 @@ func (u *UI) ShowRequestPayloadModal_SetComponentActions(wnd *winman.WindowBase,
 
 	form.AddButton("Apply", func() {
 		u.GRPC.Conn.RequestPayload = txtPayload.GetText()
-
-		// Remove the window and restore focus to menu list
-		u.PrintLog(entity.Log{
-			Content: "\nRequest Payload:\n[yellow]" + u.GRPC.Conn.RequestPayload,
-			Type:    entity.LOG_INFO,
-		})
 		u.CloseModalDialog(wnd, u.Layout.MenuList)
-
 	})
 }

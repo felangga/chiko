@@ -19,6 +19,7 @@ func (u *UI) ShowMetadataModal() {
 	form := tview.NewForm()
 	form.SetButtonsAlign(tview.AlignRight)
 	form.SetBackgroundColor(u.Theme.Colors.WindowColor)
+	form.SetButtonBackgroundColor(u.Theme.Colors.ButtonColor)
 
 	flex := tview.NewFlex()
 	flex.SetBorderPadding(1, 0, 1, 1)
@@ -165,6 +166,8 @@ func (u *UI) ShowMetadataModal_RefreshMetadataTable(table *tview.Table) {
 func (u *UI) showAddMetadataModal(parentWnd *winman.WindowBase, table *tview.Table) {
 	form := tview.NewForm()
 	form.SetBackgroundColor(u.Theme.Colors.WindowColor)
+	form.SetButtonBackgroundColor(u.Theme.Colors.ButtonColor)
+	form.SetFieldBackgroundColor(u.Theme.Colors.FieldColor)
 	form.SetButtonsAlign(tview.AlignRight)
 
 	inpKey := tview.NewInputField()
@@ -220,6 +223,8 @@ func (u *UI) showEditMetadataModal(parentWnd *winman.WindowBase, table *tview.Ta
 
 	form := tview.NewForm()
 	form.SetBackgroundColor(u.Theme.Colors.WindowColor)
+	form.SetButtonBackgroundColor(u.Theme.Colors.ButtonColor)
+	form.SetFieldBackgroundColor(u.Theme.Colors.FieldColor)
 	form.SetButtonsAlign(tview.AlignRight)
 
 	inpKey := tview.NewInputField()
@@ -271,6 +276,10 @@ func (u *UI) showEditMetadataModal(parentWnd *winman.WindowBase, table *tview.Ta
 }
 
 func (u *UI) deleteMetadataModal(parentWnd *winman.WindowBase, table *tview.Table, cell *tview.TableCell) {
+	// Return if the metadata table is empty
+	if len(u.GRPC.Conn.Metadata) < 1 {
+		return
+	}
 	u.ShowMessageBox(ShowMessageBoxParam{
 		title:   "Delete Metadata",
 		message: "Are you sure you want to delete this metadata?",
@@ -278,6 +287,7 @@ func (u *UI) deleteMetadataModal(parentWnd *winman.WindowBase, table *tview.Tabl
 			{
 				Name: "Yes",
 				OnClick: func(wnd *winman.WindowBase) {
+
 					metadata := cell.GetReference().(*entity.Metadata)
 
 					// Delete the metadata from the table
