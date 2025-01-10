@@ -9,7 +9,7 @@ import (
 )
 
 func (u *UI) ShowSetServerURLModal() {
-	txtServerURL := tview.NewInputField().SetText(u.GRPC.Conn.ServerURL)
+	txtServerURL := tview.NewInputField().SetText(u.GRPC.Conn.ServerURL).SetFieldWidth(255)
 	txtServerURL.SetFieldBackgroundColor(u.Theme.Colors.WindowColor)
 
 	wnd := u.CreateModalDialog(CreateModalDiaLog{
@@ -21,6 +21,7 @@ func (u *UI) ShowSetServerURLModal() {
 	})
 
 	u.ShowSetServerURLModal_SetInputCapture(wnd, txtServerURL)
+
 }
 
 // ShowSetServerURLModal_SetInputCapture handle the input capture from keyboard

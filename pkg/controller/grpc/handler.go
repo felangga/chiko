@@ -32,7 +32,7 @@ func (h *handler) OnReceiveResponse(msg proto.Message) {
 	// Print headers to log window
 	headerResp := "Headers:"
 	for key, values := range h.respHeaders {
-		headerResp += fmt.Sprintf("\n- %s: %s", key, strings.Join(values, ","))
+		headerResp += fmt.Sprintf("\n  - %s: %s", key, strings.Join(values, ","))
 	}
 
 	statusCode := fmt.Sprintf("Status code: %d %s", h.respStatus.Code(), h.respStatus.Message())
@@ -41,12 +41,11 @@ func (h *handler) OnReceiveResponse(msg proto.Message) {
 	jsm := jsonpb.Marshaler{Indent: "  "}
 	respStr, err := jsm.MarshalToString(msg)
 	if err != nil {
-		output := entity.Output{
-			Content:        fmt.Sprintf("failed to generate JSON form of response message: %v", err),
-			ShowTimeHeader: false,
+		log := entity.Log{
+			Content: fmt.Sprintf("failed to generate JSON form of response message: %v", err),
+			Type:    entity.LOG_ERROR,
 		}
-		output.DumpLogToChannel(h.grpc.OutputChannel)
-
+		log.DumpLogToChannel(h.grpc.LogChannel)
 		return
 	}
 
@@ -55,6 +54,7 @@ func (h *handler) OnReceiveResponse(msg proto.Message) {
 	out := entity.Output{
 		Content:        output,
 		ShowTimeHeader: false,
+		WithHeader:     true,
 	}
 
 	out.DumpLogToChannel(h.grpc.OutputChannel)

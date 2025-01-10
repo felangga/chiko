@@ -138,13 +138,13 @@ func (u *UI) doWriteToFile(textarea *tview.TextArea) {
 	txtPath := tview.NewInputField().SetText(dir + "/" + u.GRPC.Conn.ServerURL + ".txt")
 	txtPath.SetFieldBackgroundColor(u.Theme.Colors.WindowColor)
 	wnd := u.CreateModalDialog(CreateModalDiaLog{
-		title:      " 💾 Enter File Path ",
-		draggable:  false,
+		title:      " 💾 Export Path ",
+		draggable:  true,
 		resizeable: false,
 		size: winSize{
 			x:      0,
 			y:      0,
-			width:  50,
+			width:  80,
 			height: 1,
 		},
 		rootView:      txtPath,

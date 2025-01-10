@@ -21,7 +21,7 @@ func (u *UI) PrintOutput(param entity.Output) {
 	if param.WithHeader {
 		if u.GRPC != nil && len(u.GRPC.Conn.ParseMetadata()) > 0 {
 			for _, meta := range u.GRPC.Conn.ParseMetadata() {
-				metadata += "- " + meta + "\n"
+				metadata += "  - " + meta + "\n"
 			}
 
 			metaHeader := strings.Repeat(string(tcell.RuneCkBoard), 2) + "[ Request Metadata ]" + (strings.Repeat(string(tcell.RuneCkBoard), width-22)) + "\n\n"
@@ -31,9 +31,11 @@ func (u *UI) PrintOutput(param entity.Output) {
 		payloadHeader := strings.Repeat(string(tcell.RuneCkBoard), 2) + "[ Request Payload ]" + (strings.Repeat(string(tcell.RuneCkBoard), width-21)) + "\n\n"
 		newBuffer += payloadHeader + u.GRPC.Conn.RequestPayload
 
-		responseHeader := "\n\n" + strings.Repeat(string(tcell.RuneCkBoard), 2) + "[ Response ]" + (strings.Repeat(string(tcell.RuneCkBoard), width-14)) + "\n\n"
+		responseHeader := "\n\n" + strings.Repeat(string(tcell.RuneCkBoard), 2) + "[ Response Payload ]" + (strings.Repeat(string(tcell.RuneCkBoard), width-14)) + "\n"
 		newBuffer += responseHeader + param.Content
+	} else {
+		newBuffer = param.Content
 	}
 
-	out.TextArea.SetText(newBuffer, true)
+	out.TextArea.SetText(newBuffer, param.CursorAtEnd)
 }

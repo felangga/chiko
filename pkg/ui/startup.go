@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"encoding/base64"
 	"fmt"
 
 	"github.com/rivo/tview"
@@ -17,11 +18,13 @@ func (u *UI) startupSequence() {
 	u.loadBookmarks()
 	u.logDumper()
 
-	// u.PrintOutput(entity.Output{
-	// 	Content:        entity.BANNER,
-	// 	ShowTimeHeader: false,
-	// 	WithHeader:     false,
-	// })
+	banner, _ := base64.StdEncoding.DecodeString(entity.BANNER)
+	u.PrintOutput(entity.Output{
+		Content:        string(banner),
+		ShowTimeHeader: false,
+		WithHeader:     false,
+		CursorAtEnd:    false,
+	})
 }
 
 func (u *UI) loadBookmarks() {

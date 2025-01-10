@@ -7,8 +7,6 @@ import (
 	"github.com/fullstorydev/grpcurl"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-
-	"github.com/felangga/chiko/pkg/entity"
 )
 
 // InvokeRPC will invoke the configured payload and try to hit the server with it
@@ -22,12 +20,6 @@ func (g *GRPC) InvokeRPC() error {
 	for _, meta := range g.Conn.ParseMetadata() {
 		metadata += "- " + meta + "\n"
 	}
-
-	out := entity.Output{
-		Content:        "\nRequest Metadata:\n" + metadata + "\nRequest Payload:\n" + g.Conn.RequestPayload + "\n",
-		ShowTimeHeader: true,
-	}
-	out.DumpLogToChannel(g.OutputChannel)
 
 	options := grpcurl.FormatOptions{
 		EmitJSONDefaultFields: true,
