@@ -19,7 +19,7 @@ func (u *UI) ShowSetServerURLModal() {
 
 	txtServerURL = tview.NewInputField()
 	txtServerURL.SetBackgroundColor(u.Theme.Colors.WindowColor)
-	txtServerURL.SetFieldBackgroundColor(u.Theme.Colors.FieldBackgroundColor)
+	txtServerURL.SetFieldBackgroundColor(u.Theme.Colors.PlaceholderColor)
 	txtServerURL.SetText(u.GRPC.Conn.ServerURL)
 
 	chkSkipSecure = tview.NewCheckbox().SetLabel("Skip Server Verification ")
@@ -29,6 +29,7 @@ func (u *UI) ShowSetServerURLModal() {
 	btnConnect = tview.NewButton("Connect")
 	btnCertPath = tview.NewButton("SSL Certicates")
 
+	
 	layout := tview.NewGrid()
 	layout.SetBorderPadding(1, 1, 1, 1)
 	layout.SetBackgroundColor(u.Theme.Colors.WindowColor)
@@ -47,7 +48,7 @@ func (u *UI) ShowSetServerURLModal() {
 		fallbackFocus: u.Layout.MenuList,
 	})
 
-	u.ShowSetServerURLModal_SetInputCapture(wnd, txtServerURL)
+	u.ShowSetServerURLModal_SetInputCapture(wnd)
 
 }
 

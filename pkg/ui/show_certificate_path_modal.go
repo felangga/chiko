@@ -1,9 +1,13 @@
 package ui
 
 import (
+	"os"
+
 	"github.com/epiclabs-io/winman"
-	"github.com/felangga/chiko/pkg/entity"
+	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
+
+	"github.com/felangga/chiko/pkg/entity"
 )
 
 var (
@@ -13,7 +17,6 @@ var (
 )
 
 func (u *UI) ShowCertificatePathModal(parentWnd *winman.WindowBase) {
-
 	var (
 		CAPath   string
 		CertPath string
@@ -53,7 +56,7 @@ func (u *UI) ShowCertificatePathModal(parentWnd *winman.WindowBase) {
 	layout.AddFormItem(txtKeyPath)
 
 	wnd := u.CreateModalDialog(CreateModalDiaLog{
-		title:         " 🔐 Certificate Path ",
+		title:         " 🔐 Certificate ",
 		rootView:      layout,
 		draggable:     true,
 		size:          winSize{0, 0, 50, 11},
@@ -88,5 +91,20 @@ func (u *UI) ShowCertificatePathModal(parentWnd *winman.WindowBase) {
 		u.SetFocus(parentWnd)
 	})
 
-	// u.ShowSetServerURLModal_SetInputCapture(wnd)
+	u.ShowCertificatePathModal_SetInputCapture(wnd, parentWnd)
+}
+
+func (u *UI) ShowCertificatePathModal_SetInputCapture(wnd *winman.WindowBase, parentWnd *winman.WindowBase) {
+	wnd.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		switch event.Key() {
+		case tcell.KeyEscape:
+			u.WinMan.RemoveWindow(wnd)
+			u.SetFocus(parentWnd)
+			os.Exit(0)
+			return nil
+		}
+
+		return event
+	})
+
 }
