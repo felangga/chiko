@@ -21,7 +21,7 @@ func (u UI) ShowBookmarkOptionsModal(parentWnd tview.Primitive, bookmark *entity
 	listOptions.SetMainTextStyle(st.Background(u.Theme.Colors.WindowColor).Foreground(tcell.ColorWhite))
 	listOptions.SetShortcutStyle(st.Background(u.Theme.Colors.WindowColor).Foreground(tcell.ColorYellow))
 
-	wnd := u.CreateModalDialog(CreateModalDiaLog{
+	wnd := u.CreateModalDialog(CreateModalDialogParam{
 		title:         " 📚 Bookmark Options ",
 		rootView:      listOptions,
 		draggable:     true,

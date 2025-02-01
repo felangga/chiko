@@ -39,12 +39,12 @@ func (u *UI) ShowRequestPayloadModal() {
 	form := tview.NewForm()
 	form.SetBackgroundColor(u.Theme.Colors.WindowColor)
 	form.SetBorderPadding(1, 1, 0, 1)
-	form.SetFieldBackgroundColor(u.Theme.Colors.FieldColor)
+	form.SetFieldBackgroundColor(u.Theme.Colors.PlaceholderColor)
 	form.AddFormItem(txtPayload)
 	form.SetButtonsAlign(tview.AlignRight)
 	form.SetButtonBackgroundColor(u.Theme.Colors.ButtonColor)
 
-	wnd := u.CreateModalDialog(CreateModalDiaLog{
+	wnd := u.CreateModalDialog(CreateModalDialogParam{
 		title:         " 📦 Request Payload ",
 		rootView:      form,
 		draggable:     true,

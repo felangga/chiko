@@ -1,3 +1,3 @@
 package entity
 
-const APP_VERSION = "0.0.5 ALPHA"
+const APP_VERSION = "0.0.6 ALPHA"

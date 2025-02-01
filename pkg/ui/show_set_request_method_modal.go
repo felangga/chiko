@@ -46,7 +46,7 @@ func (u *UI) ShowSetRequestMethodModal() {
 	wndLayer.AddItem(txtSearch, 1, 1, true)
 	wndLayer.AddItem(listMethods, 0, 1, false)
 
-	wnd := u.CreateModalDialog(CreateModalDiaLog{
+	wnd := u.CreateModalDialog(CreateModalDialogParam{
 		title:         " 📡 Select RPC Methods ",
 		rootView:      wndLayer,
 		draggable:     true,

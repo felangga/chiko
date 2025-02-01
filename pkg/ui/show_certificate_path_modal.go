@@ -1,8 +1,6 @@
 package ui
 
 import (
-	"os"
-
 	"github.com/epiclabs-io/winman"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -36,7 +34,8 @@ func (u *UI) ShowCertificatePathModal(parentWnd *winman.WindowBase) {
 	}
 
 	txtCAPath = tview.NewInputField()
-	txtCAPath.SetLabel("CA Path")
+	txtCAPath.SetBackgroundColor(u.Theme.Colors.WindowColor)
+	txtCAPath.SetFieldBackgroundColor(u.Theme.Colors.PlaceholderColor)
 	txtCAPath.SetText(CAPath)
 
 	txtCertPath = tview.NewInputField()
@@ -51,15 +50,20 @@ func (u *UI) ShowCertificatePathModal(parentWnd *winman.WindowBase) {
 	layout.SetBorderPadding(1, 1, 1, 1)
 	layout.SetButtonsAlign(tview.AlignRight)
 	layout.SetBackgroundColor(u.Theme.Colors.WindowColor)
+	layout.SetButtonBackgroundColor(u.Theme.Colors.ButtonColor)
+	layout.SetFieldBackgroundColor(u.Theme.Colors.PlaceholderColor)
+	layout.AddTextView("CA Path", "Provide CA Certificate if your server uses a self-signed certificate\n(Press Enter to Browse File)", 80, 3, true, false)
 	layout.AddFormItem(txtCAPath)
+	layout.AddTextView("mTLS Key", "Provide Client Certificate and Key if your server uses mutual TLS\n(Press Enter to Browse File)", 80, 2, true, false)
 	layout.AddFormItem(txtCertPath)
 	layout.AddFormItem(txtKeyPath)
 
-	wnd := u.CreateModalDialog(CreateModalDiaLog{
+	wnd := u.CreateModalDialog(CreateModalDialogParam{
 		title:         " 🔐 Certificate ",
 		rootView:      layout,
 		draggable:     true,
-		size:          winSize{0, 0, 50, 11},
+		resizeable:    false,
+		size:          winSize{0, 0, 80, 18},
 		fallbackFocus: parentWnd,
 	})
 
@@ -91,19 +95,65 @@ func (u *UI) ShowCertificatePathModal(parentWnd *winman.WindowBase) {
 		u.SetFocus(parentWnd)
 	})
 
-	u.ShowCertificatePathModal_SetInputCapture(wnd, parentWnd)
+	u.ShowCertificatePathModal_SetInputCapture(layout, wnd, parentWnd)
 }
 
-func (u *UI) ShowCertificatePathModal_SetInputCapture(wnd *winman.WindowBase, parentWnd *winman.WindowBase) {
-	wnd.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		switch event.Key() {
-		case tcell.KeyEscape:
-			u.WinMan.RemoveWindow(wnd)
-			u.SetFocus(parentWnd)
-			os.Exit(0)
+func (u *UI) ShowCertificatePathModal_SetInputCapture(form *tview.Form, wnd *winman.WindowBase, parentWnd *winman.WindowBase) {
+	// Handle CA Path input box
+	txtCAPath.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		if event.Key() == tcell.KeyEnter {
+			u.ShowModalFilePicker(form, txtCAPath.GetText(), func(path string) {
+				txtCAPath.SetText(path)
+			})
+
 			return nil
 		}
 
+		if event.Key() == tcell.KeyEscape {
+			u.CloseModalDialog(wnd, parentWnd)
+			return nil
+		}
+
+		return event
+	})
+
+	// Handle Cert Path input box
+	txtCertPath.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		if event.Key() == tcell.KeyEnter {
+			u.ShowModalFilePicker(form, txtCertPath.GetText(), func(path string) {
+				txtCertPath.SetText(path)
+			})
+		}
+
+		if event.Key() == tcell.KeyEscape {
+			u.CloseModalDialog(wnd, parentWnd)
+			return nil
+		}
+
+		return event
+	})
+
+	// Handle Key Path input box
+	txtKeyPath.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		if event.Key() == tcell.KeyEnter {
+			u.ShowModalFilePicker(form, txtKeyPath.GetText(), func(path string) {
+				txtKeyPath.SetText(path)
+			})
+		}
+
+		if event.Key() == tcell.KeyEscape {
+			u.CloseModalDialog(wnd, parentWnd)
+			return nil
+		}
+
+		return event
+	})
+
+	form.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		switch event.Key() {
+		case tcell.KeyEscape:
+			u.CloseModalDialog(wnd, parentWnd)
+		}
 		return event
 	})
 

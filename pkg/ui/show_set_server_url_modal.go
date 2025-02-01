@@ -29,7 +29,6 @@ func (u *UI) ShowSetServerURLModal() {
 	btnConnect = tview.NewButton("Connect")
 	btnCertPath = tview.NewButton("SSL Certicates")
 
-	
 	layout := tview.NewGrid()
 	layout.SetBorderPadding(1, 1, 1, 1)
 	layout.SetBackgroundColor(u.Theme.Colors.WindowColor)
@@ -40,7 +39,7 @@ func (u *UI) ShowSetServerURLModal() {
 	layout.AddItem(btnCertPath, 1, 2, 1, 1, 0, 0, false)
 	layout.AddItem(btnConnect, 3, 2, 1, 1, 0, 0, false)
 
-	wnd := u.CreateModalDialog(CreateModalDiaLog{
+	wnd := u.CreateModalDialog(CreateModalDialogParam{
 		title:         " 🌏 Server URL ",
 		rootView:      layout,
 		draggable:     true,
@@ -49,11 +48,11 @@ func (u *UI) ShowSetServerURLModal() {
 	})
 
 	u.ShowSetServerURLModal_SetInputCapture(wnd)
-
 }
 
 // ShowSetServerURLModal_SetInputCapture handle the input capture from keyboard
 func (u *UI) ShowSetServerURLModal_SetInputCapture(wnd *winman.WindowBase) {
+
 	txtServerURL.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
 		case tcell.KeyEscape:

@@ -32,7 +32,7 @@ func (u *UI) ShowAuthorizationModal() {
 	txtAuthorization.SetPlaceholderTextColor(u.Theme.Colors.PlaceholderColor)
 	txtAuthorization.SetPlaceholderStyle(style)
 
-	wnd := u.CreateModalDialog(CreateModalDiaLog{
+	wnd := u.CreateModalDialog(CreateModalDialogParam{
 		title:         " 🔑 Authorization ",
 		rootView:      txtAuthorization,
 		draggable:     true,

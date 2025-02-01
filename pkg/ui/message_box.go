@@ -31,7 +31,7 @@ func (u *UI) ShowMessageBox(param ShowMessageBoxParam) {
 	form.SetButtonBackgroundColor(u.Theme.Colors.ButtonColor)
 	form.SetBackgroundColor(u.Theme.Colors.WindowColor)
 
-	wnd := u.CreateModalDialog(CreateModalDiaLog{
+	wnd := u.CreateModalDialog(CreateModalDialogParam{
 		title:         param.title,
 		rootView:      form,
 		draggable:     true,

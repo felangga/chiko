@@ -58,9 +58,20 @@ func (g *GRPC) Connect(serverURL string) error {
 }
 
 func (g *GRPC) resetActiveConnection() error {
-	if g.Conn.ActiveConnection != nil {
-		return g.Conn.ActiveConnection.Close()
+	if g.Conn.ActiveConnection == nil {
+		return nil
 	}
+
+	// Attempt to close the connection with error handling
+	err := g.Conn.ActiveConnection.Close()
+	if err != nil {
+		// Log the error but don't propagate it
+		g.logWarning(fmt.Sprintf("Error closing active connection: %v", err))
+	}
+
+	// Explicitly set ActiveConnection to nil after closing
+	g.Conn.ActiveConnection = nil
+
 	return nil
 }
 
@@ -74,7 +85,7 @@ func (g *GRPC) configureTLSCredentials() (credentials.TransportCredentials, erro
 
 	if g.Conn.SSLCert.ClientCert_Path != nil && g.Conn.SSLCert.ClientKey_Path != nil {
 		var err error
-		certs, err = tls.LoadX509KeyPair("./cert/client-cert.pem", "./cert/client-key.pem")
+		certs, err = tls.LoadX509KeyPair(*g.Conn.SSLCert.ClientCert_Path, *g.Conn.SSLCert.ClientKey_Path)
 		if err != nil {
 			return nil, fmt.Errorf("failed to load client certificate: %w", err)
 		}
