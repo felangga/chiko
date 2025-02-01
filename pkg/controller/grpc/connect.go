@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"fmt"
 	"os"
 
 	"github.com/fullstorydev/grpcurl"
@@ -18,112 +19,124 @@ import (
 
 // Connect is used to connect to the server and doing check if the server support server reflection
 func (g *GRPC) Connect(serverURL string) error {
-	context, timeout := context.WithTimeout(context.Background(), GRPC_TIMEOUT)
-	defer timeout()
+	ctx, cancel := context.WithTimeout(context.Background(), GRPC_TIMEOUT)
+	defer cancel()
 
-	var (
-		opts  []grpc.DialOption
-		creds credentials.TransportCredentials
-		certs tls.Certificate
-	)
-
-	creds = insecure.NewCredentials()
-	caCertPool := x509.NewCertPool()
-	opts = append(opts, grpc.WithUserAgent("chiko/"+entity.APP_VERSION))
+	// Reset connection state
+	if err := g.resetActiveConnection(); err != nil {
+		return fmt.Errorf("failed to reset connection: %w", err)
+	}
 
 	g.Conn.ServerURL = serverURL
+	g.logInfo("🌏 server URL set to [blue]" + serverURL + ", connecting...")
 
-	// Close active connection if we are going to connect to another server
-	if g.Conn.ActiveConnection != nil {
-		err := g.Conn.ActiveConnection.Close()
-		if err != nil {
-			return err
-		}
-		g.Conn.ActiveConnection = nil
-	}
-
-	log := entity.Log{
-		Content: "🌏 server URL set to [blue]" + g.Conn.ServerURL + ", connecting...",
-		Type:    entity.LOG_INFO,
-	}
-	log.DumpLogToChannel(g.LogChannel)
-
-	if g.Conn.SSLCert != nil {
-		if g.Conn.SSLCert.ClientCert_Path != nil && g.Conn.SSLCert.ClientKey_Path != nil {
-			var err error
-
-			// Load the client's certificate and private key
-			certs, err = tls.LoadX509KeyPair("./cert/client-cert.pem", "./cert/client-key.pem")
-			if err != nil {
-				return err
-			}
-		}
-
-		if g.Conn.SSLCert.CA_Path != nil {
-			// Load the CA certificate
-			caCert, err := os.ReadFile(*g.Conn.SSLCert.CA_Path)
-			if err != nil {
-				log := entity.Log{
-					Content: err.Error(),
-					Type:    entity.LOG_INFO,
-				}
-				log.DumpLogToChannel(g.LogChannel)
-				return err
-			}
-
-			if ok := caCertPool.AppendCertsFromPEM(caCert); !ok {
-				return err
-			}
-		}
-
-		creds = credentials.NewTLS(&tls.Config{
-			InsecureSkipVerify: g.Conn.InsecureSkipVerify,
-			Certificates:       []tls.Certificate{certs},
-			RootCAs:            caCertPool,
-		})
-	}
-
-	conn, err := grpcurl.BlockingDial(context, "tcp", serverURL, creds, opts...)
+	// Configure TLS credentials
+	creds, err := g.configureTLSCredentials()
 	if err != nil {
+		return fmt.Errorf("TLS configuration error: %w", err)
+	}
+
+	// Dial options
+	opts := []grpc.DialOption{
+		grpc.WithUserAgent("chiko/" + entity.APP_VERSION),
+	}
+
+	// Establish gRPC connection
+	conn, err := grpcurl.BlockingDial(ctx, "tcp", serverURL, creds, opts...)
+	if err != nil {
+		return fmt.Errorf("failed to dial server %s: %w", serverURL, err)
+	}
+	g.Conn.ActiveConnection = conn
+	g.logInfo("✅ connected to [blue]" + serverURL)
+
+	// Server reflection
+	if err := g.setupServerReflection(ctx, conn); err != nil {
 		return err
 	}
 
-	g.Conn.ActiveConnection = conn
+	return nil
+}
 
-	log = entity.Log{
-		Content: "✅ connected to [blue]" + g.Conn.ServerURL,
-		Type:    entity.LOG_INFO,
+func (g *GRPC) resetActiveConnection() error {
+	if g.Conn.ActiveConnection != nil {
+		return g.Conn.ActiveConnection.Close()
 	}
-	log.DumpLogToChannel(g.LogChannel)
+	return nil
+}
 
-	refClient := grpcreflect.NewClientV1Alpha(context, reflectpb.NewServerReflectionClient(conn))
-	reflSource := grpcurl.DescriptorSourceFromServer(context, refClient)
+func (g *GRPC) configureTLSCredentials() (credentials.TransportCredentials, error) {
+	if g.Conn.SSLCert == nil {
+		return insecure.NewCredentials(), nil
+	}
+
+	caCertPool := x509.NewCertPool()
+	var certs tls.Certificate
+
+	if g.Conn.SSLCert.ClientCert_Path != nil && g.Conn.SSLCert.ClientKey_Path != nil {
+		var err error
+		certs, err = tls.LoadX509KeyPair("./cert/client-cert.pem", "./cert/client-key.pem")
+		if err != nil {
+			return nil, fmt.Errorf("failed to load client certificate: %w", err)
+		}
+	}
+
+	if g.Conn.SSLCert.CA_Path != nil {
+		caCert, err := os.ReadFile(*g.Conn.SSLCert.CA_Path)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read CA certificate: %w", err)
+		}
+
+		if !caCertPool.AppendCertsFromPEM(caCert) {
+			return nil, fmt.Errorf("failed to append CA certificate to pool")
+		}
+	}
+
+	return credentials.NewTLS(&tls.Config{
+		InsecureSkipVerify: g.Conn.InsecureSkipVerify,
+		Certificates:       []tls.Certificate{certs},
+		RootCAs:            caCertPool,
+	}), nil
+}
+
+func (g *GRPC) setupServerReflection(ctx context.Context, conn *grpc.ClientConn) error {
+	refClient := grpcreflect.NewClientV1Alpha(ctx, reflectpb.NewServerReflectionClient(conn))
+	reflSource := grpcurl.DescriptorSourceFromServer(ctx, refClient)
+
 	svcs, err := grpcurl.ListServices(reflSource)
 	if err != nil {
-		log = entity.Log{
-			Content: "❗️ connected but failed to get services from server reflection",
-			Type:    entity.LOG_WARNING,
-		}
-		log.DumpLogToChannel(g.LogChannel)
-
+		g.logWarning("❗️ connected but failed to get services from server reflection")
 		return nil
 	}
-	g.Conn.DescriptorSource = reflSource
-	log = entity.Log{
-		Content: "✅ this server support server reflection",
-		Type:    entity.LOG_INFO,
-	}
-	log.DumpLogToChannel(g.LogChannel)
 
-	g.Conn.AvailableMethods = []string{} // Reset available methods
+	g.logInfo("✅ this server supports server reflection")
+	g.Conn.DescriptorSource = reflSource
+	g.Conn.AvailableMethods = make([]string, 0, len(svcs)*5) // Preallocate with reasonable estimate
+	g.Conn.AvailableServices = make([]string, 0, len(svcs))
+
 	for _, svc := range svcs {
 		g.Conn.AvailableServices = append(g.Conn.AvailableServices, svc)
 		methods, err := grpcurl.ListMethods(reflSource, svc)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to list methods for service %s: %w", svc, err)
 		}
 		g.Conn.AvailableMethods = append(g.Conn.AvailableMethods, methods...)
 	}
 
 	return nil
+}
+
+func (g *GRPC) logInfo(message string) {
+	log := entity.Log{
+		Content: message,
+		Type:    entity.LOG_INFO,
+	}
+	log.DumpLogToChannel(g.LogChannel)
+}
+
+func (g *GRPC) logWarning(message string) {
+	log := entity.Log{
+		Content: message,
+		Type:    entity.LOG_WARNING,
+	}
+	log.DumpLogToChannel(g.LogChannel)
 }
