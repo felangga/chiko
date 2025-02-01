@@ -11,12 +11,14 @@ import (
 const GRPC_TIMEOUT = time.Second * 10
 
 type GRPC struct {
-	Conn       *entity.Session
-	LogChannel chan entity.Log
+	Ctx           context.Context
+	Conn          *entity.Session
+	LogChannel    chan entity.Log
+	OutputChannel chan entity.Output
 }
 
 // NewGRPC is used to create a new grpc object
-func NewGRPC(logChannel chan entity.Log) GRPC {
+func NewGRPC(logChannel chan entity.Log, outputChannel chan entity.Output) GRPC {
 	conn := entity.Session{
 		// Default server URL
 		ID:        uuid.New(),
@@ -26,6 +28,7 @@ func NewGRPC(logChannel chan entity.Log) GRPC {
 	g := GRPC{
 		&conn,
 		logChannel,
+		outputChannel,
 	}
 
 	return g

@@ -32,7 +32,7 @@ func (h *handler) OnReceiveResponse(msg proto.Message) {
 	// Print headers to log window
 	headerResp := "Headers:"
 	for key, values := range h.respHeaders {
-		headerResp += fmt.Sprintf("\n- %s: %s", key, strings.Join(values, ","))
+		headerResp += fmt.Sprintf("\n  - %s: %s", key, strings.Join(values, ","))
 	}
 
 	statusCode := fmt.Sprintf("Status code: %d %s", h.respStatus.Code(), h.respStatus.Message())
@@ -46,16 +46,19 @@ func (h *handler) OnReceiveResponse(msg proto.Message) {
 			Type:    entity.LOG_ERROR,
 		}
 		log.DumpLogToChannel(h.grpc.LogChannel)
-
 		return
 	}
+
 	h.respMessages = append(h.respMessages, respStr)
-	output := fmt.Sprintf("\n%s\n\n%s\n[yellow]%s", headerResp, statusCode, respStr)
-	log := entity.Log{
-		Content: output,
-		Type:    entity.LOG_INFO,
+	output := fmt.Sprintf("\n%s\n\n%s\n%s", headerResp, statusCode, respStr)
+	out := entity.Output{
+		Content:        output,
+		ShowTimeHeader: false,
+		WithHeader:     true,
 	}
-	log.DumpLogToChannel(h.grpc.LogChannel)
+
+	out.DumpLogToChannel(h.grpc.OutputChannel)
+
 }
 
 func (h *handler) OnResolveMethod(md *desc.MethodDescriptor) {

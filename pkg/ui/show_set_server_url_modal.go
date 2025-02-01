@@ -47,7 +47,8 @@ func (u *UI) ShowSetServerURLModal() {
 		fallbackFocus: u.Layout.MenuList,
 	})
 
-	u.ShowSetServerURLModal_SetInputCapture(wnd)
+	u.ShowSetServerURLModal_SetInputCapture(wnd, txtServerURL)
+
 }
 
 // ShowSetServerURLModal_SetInputCapture handle the input capture from keyboard

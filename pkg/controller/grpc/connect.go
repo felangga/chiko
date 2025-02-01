@@ -117,7 +117,7 @@ func (g *GRPC) setupServerReflection(ctx context.Context, conn *grpc.ClientConn)
 		g.Conn.AvailableServices = append(g.Conn.AvailableServices, svc)
 		methods, err := grpcurl.ListMethods(reflSource, svc)
 		if err != nil {
-			return fmt.Errorf("failed to list methods for service %s: %w", svc, err)
+			return err
 		}
 		g.Conn.AvailableMethods = append(g.Conn.AvailableMethods, methods...)
 	}
