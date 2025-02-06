@@ -49,7 +49,7 @@ func (u *UI) ShowBookmarkNameModal(parentWND winman.Window, onEnter func(bookmar
 	bookmarkName.SetFieldBackgroundColor(u.Theme.Colors.WindowColor)
 
 	wnd := u.CreateModalDialog(CreateModalDialogParam{
-		title:         " ✏️ Enter Bookmark Name ",
+		title:         " Enter Bookmark Name ",
 		rootView:      bookmarkName,
 		draggable:     true,
 		size:          winSize{0, 0, 80, 1},
@@ -74,6 +74,7 @@ func (u *UI) ShowBookmarkCategoryModal(onSelectedCategory func(wnd winman.Window
 	list := tview.NewList()
 	list.ShowSecondaryText(false)
 	list.SetBackgroundColor(u.Theme.Colors.WindowColor)
+	list.SetMainTextStyle(u.Theme.Style.ListMainTextStyle)
 
 	wnd := u.CreateModalDialog(CreateModalDialogParam{
 		title:         " 📚 Select Bookmark Category ",

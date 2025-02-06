@@ -18,13 +18,11 @@ func (u *UI) startupSequence() {
 	u.loadBookmarks()
 	u.logDumper()
 
-
 	banner, _ := base64.StdEncoding.DecodeString(entity.BANNER)
 	u.PrintOutput(entity.Output{
-		Content:        string(banner),
-		ShowTimeHeader: false,
-		WithHeader:     false,
-		CursorAtEnd:    false,
+		Content:     string(banner),
+		WithHeader:  false,
+		CursorAtEnd: false,
 	})
 }
 

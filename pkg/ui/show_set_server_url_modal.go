@@ -9,41 +9,36 @@ import (
 )
 
 var (
-	txtServerURL  *tview.InputField
-	chkSkipSecure *tview.Checkbox
-	btnConnect    *tview.Button
-	btnCertPath   *tview.Button
+	txtServerURL *tview.InputField
+	btnConnect   *tview.Button
+	btnTLS       *tview.Button
 )
 
 func (u *UI) ShowSetServerURLModal() {
-
 	txtServerURL = tview.NewInputField()
 	txtServerURL.SetBackgroundColor(u.Theme.Colors.WindowColor)
-	txtServerURL.SetFieldBackgroundColor(u.Theme.Colors.PlaceholderColor)
+	txtServerURL.SetFieldStyle(u.Theme.Style.FieldStyle)
 	txtServerURL.SetText(u.GRPC.Conn.ServerURL)
 
-	chkSkipSecure = tview.NewCheckbox().SetLabel("Skip Server Verification ")
-	chkSkipSecure.SetBackgroundColor(u.Theme.Colors.WindowColor)
-	chkSkipSecure.SetChecked(u.GRPC.Conn.InsecureSkipVerify)
-
 	btnConnect = tview.NewButton("Connect")
-	btnCertPath = tview.NewButton("SSL Certicates")
+	btnConnect.SetStyle(u.Theme.Style.ButtonStyle)
+	btnTLS = tview.NewButton("🔐 TLS")
+	btnTLS.SetStyle(u.Theme.Style.ButtonStyle)
 
 	layout := tview.NewGrid()
 	layout.SetBorderPadding(1, 1, 1, 1)
 	layout.SetBackgroundColor(u.Theme.Colors.WindowColor)
-	layout.SetColumns(0, 0, 0)
-	layout.SetRows(2, 1, 0, 1)
+	layout.SetColumns(10, 0, 20)
+	layout.SetRows(2, 1)
 	layout.AddItem(txtServerURL, 0, 0, 1, 3, 0, 0, true)
-	layout.AddItem(chkSkipSecure, 1, 0, 1, 2, 0, 0, false)
-	layout.AddItem(btnCertPath, 1, 2, 1, 1, 0, 0, false)
-	layout.AddItem(btnConnect, 3, 2, 1, 1, 0, 0, false)
+	layout.AddItem(btnTLS, 1, 0, 1, 1, 0, 0, false)
+	layout.AddItem(btnConnect, 1, 2, 1, 1, 0, 0, false)
 
 	wnd := u.CreateModalDialog(CreateModalDialogParam{
 		title:         " 🌏 Server URL ",
 		rootView:      layout,
 		draggable:     true,
-		size:          winSize{0, 0, 70, 10},
+		size:          winSize{0, 0, 70, 7},
 		fallbackFocus: u.Layout.MenuList,
 	})
 
@@ -65,24 +60,14 @@ func (u *UI) ShowSetServerURLModal_SetInputCapture(wnd *winman.WindowBase) {
 			return nil
 
 		case tcell.KeyTab:
-			u.SetFocus(chkSkipSecure)
+			u.SetFocus(btnTLS)
 			return nil
 		}
 
 		return event
 	})
 
-	chkSkipSecure.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		switch event.Key() {
-		case tcell.KeyTab:
-			u.SetFocus(btnCertPath)
-			return nil
-		}
-
-		return event
-	})
-
-	btnCertPath.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+	btnTLS.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
 		case tcell.KeyTab:
 			u.SetFocus(btnConnect)
@@ -109,14 +94,13 @@ func (u *UI) ShowSetServerURLModal_SetInputCapture(wnd *winman.WindowBase) {
 		u.doConnect(wnd)
 	})
 
-	btnCertPath.SetSelectedFunc(func() {
+	btnTLS.SetSelectedFunc(func() {
 		u.ShowCertificatePathModal(wnd)
 	})
 }
 
 func (u *UI) doConnect(wnd *winman.WindowBase) {
 	go func() {
-		u.GRPC.Conn.InsecureSkipVerify = chkSkipSecure.IsChecked()
 		err := u.GRPC.Connect(txtServerURL.GetText())
 		if err != nil {
 			u.PrintLog(entity.Log{
@@ -127,6 +111,5 @@ func (u *UI) doConnect(wnd *winman.WindowBase) {
 	}()
 
 	// Remove the window and restore focus to menu list
-	u.WinMan.RemoveWindow(wnd)
-	u.SetFocus(u.Layout.MenuList)
+	u.CloseModalDialog(wnd, u.Layout.MenuList)
 }

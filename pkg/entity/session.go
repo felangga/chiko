@@ -20,6 +20,7 @@ type Session struct {
 	Metadata          []*Metadata              `json:"metadata"`
 
 	// SSL Certificates
+	EnableTLS          bool  `json:"enable_tls"`
 	SSLCert            *Cert `json:"ssl_cert"`
 	InsecureSkipVerify bool  `json:"insecure_skip_verify"`
 }

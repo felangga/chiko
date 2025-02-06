@@ -22,6 +22,8 @@ func (g *GRPC) Connect(serverURL string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), GRPC_TIMEOUT)
 	defer cancel()
 
+	var creds credentials.TransportCredentials
+
 	// Reset connection state
 	if err := g.resetActiveConnection(); err != nil {
 		return fmt.Errorf("failed to reset connection: %w", err)
@@ -30,10 +32,13 @@ func (g *GRPC) Connect(serverURL string) error {
 	g.Conn.ServerURL = serverURL
 	g.logInfo("🌏 server URL set to [blue]" + serverURL + ", connecting...")
 
-	// Configure TLS credentials
-	creds, err := g.configureTLSCredentials()
-	if err != nil {
-		return fmt.Errorf("TLS configuration error: %w", err)
+	if g.Conn.EnableTLS {
+		// Configure TLS credentials
+		var err error
+		creds, err = g.configureTLSCredentials()
+		if err != nil {
+			return fmt.Errorf("TLS configuration error: %w", err)
+		}
 	}
 
 	// Dial options

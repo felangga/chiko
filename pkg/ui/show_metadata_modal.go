@@ -19,7 +19,7 @@ func (u *UI) ShowMetadataModal() {
 	form := tview.NewForm()
 	form.SetButtonsAlign(tview.AlignRight)
 	form.SetBackgroundColor(u.Theme.Colors.WindowColor)
-	form.SetButtonBackgroundColor(u.Theme.Colors.ButtonColor)
+	form.SetButtonStyle(u.Theme.Style.ButtonStyle)
 
 	flex := tview.NewFlex()
 	flex.SetBorderPadding(1, 0, 1, 1)
@@ -166,8 +166,8 @@ func (u *UI) ShowMetadataModal_RefreshMetadataTable(table *tview.Table) {
 func (u *UI) showAddMetadataModal(parentWnd *winman.WindowBase, table *tview.Table) {
 	form := tview.NewForm()
 	form.SetBackgroundColor(u.Theme.Colors.WindowColor)
-	form.SetButtonBackgroundColor(u.Theme.Colors.ButtonColor)
-	form.SetFieldBackgroundColor(u.Theme.Colors.PlaceholderColor)
+	form.SetButtonStyle(u.Theme.Style.ButtonStyle)
+	form.SetFieldStyle(u.Theme.Style.FieldStyle)
 	form.SetButtonsAlign(tview.AlignRight)
 
 	inpKey := tview.NewInputField()
@@ -223,8 +223,8 @@ func (u *UI) showEditMetadataModal(parentWnd *winman.WindowBase, table *tview.Ta
 
 	form := tview.NewForm()
 	form.SetBackgroundColor(u.Theme.Colors.WindowColor)
-	form.SetButtonBackgroundColor(u.Theme.Colors.ButtonColor)
-	form.SetFieldBackgroundColor(u.Theme.Colors.PlaceholderColor)
+	form.SetButtonStyle(u.Theme.Style.ButtonStyle)
+	form.SetFieldStyle(u.Theme.Style.FieldStyle)
 	form.SetButtonsAlign(tview.AlignRight)
 
 	inpKey := tview.NewInputField()

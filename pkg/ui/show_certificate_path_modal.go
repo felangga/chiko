@@ -35,11 +35,12 @@ func (u *UI) ShowCertificatePathModal(parentWnd *winman.WindowBase) {
 
 	txtCAPath = tview.NewInputField()
 	txtCAPath.SetBackgroundColor(u.Theme.Colors.WindowColor)
-	txtCAPath.SetFieldBackgroundColor(u.Theme.Colors.PlaceholderColor)
+	txtCAPath.SetFieldStyle(u.Theme.Style.FieldStyle)
 	txtCAPath.SetText(CAPath)
 
 	txtCertPath = tview.NewInputField()
 	txtCertPath.SetLabel("Cert Path")
+	txtCertPath.SetFieldStyle(u.Theme.Style.FieldStyle)
 	txtCertPath.SetText(CertPath)
 
 	txtKeyPath = tview.NewInputField()
@@ -50,20 +51,27 @@ func (u *UI) ShowCertificatePathModal(parentWnd *winman.WindowBase) {
 	layout.SetBorderPadding(1, 1, 1, 1)
 	layout.SetButtonsAlign(tview.AlignRight)
 	layout.SetBackgroundColor(u.Theme.Colors.WindowColor)
-	layout.SetButtonBackgroundColor(u.Theme.Colors.ButtonColor)
-	layout.SetFieldBackgroundColor(u.Theme.Colors.PlaceholderColor)
-	layout.AddTextView("CA Path", "Provide CA Certificate if your server uses a self-signed certificate\n(Press Enter to Browse File)", 80, 3, true, false)
+	layout.SetButtonStyle(u.Theme.Style.ButtonStyle)
+	layout.SetFieldStyle(u.Theme.Style.FieldStyle)
+
+	layout.AddCheckbox("Enable TLS", u.GRPC.Conn.EnableTLS, func(checked bool) {
+		u.GRPC.Conn.EnableTLS = checked
+	})
+	layout.AddCheckbox("Skip Verification", u.GRPC.Conn.InsecureSkipVerify, func(checked bool) {
+		u.GRPC.Conn.InsecureSkipVerify = checked
+	})
+	layout.AddTextView("CA Path", "Provide CA Certificate if your server uses a self-signed certificate\n(Press Enter to Browse File)", 80, 2, true, false)
 	layout.AddFormItem(txtCAPath)
 	layout.AddTextView("mTLS Key", "Provide Client Certificate and Key if your server uses mutual TLS\n(Press Enter to Browse File)", 80, 2, true, false)
 	layout.AddFormItem(txtCertPath)
 	layout.AddFormItem(txtKeyPath)
 
 	wnd := u.CreateModalDialog(CreateModalDialogParam{
-		title:         " 🔐 Certificate ",
+		title:         " 🔐 TLS ",
 		rootView:      layout,
 		draggable:     true,
 		resizeable:    false,
-		size:          winSize{0, 0, 80, 18},
+		size:          winSize{0, 0, 100, 21},
 		fallbackFocus: parentWnd,
 	})
 

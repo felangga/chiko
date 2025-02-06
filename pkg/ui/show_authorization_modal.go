@@ -29,7 +29,6 @@ func (u *UI) ShowAuthorizationModal() {
 		Italic(true)
 
 	txtAuthorization.SetPlaceholder("Set token without the Bearer prefix")
-	txtAuthorization.SetPlaceholderTextColor(u.Theme.Colors.PlaceholderColor)
 	txtAuthorization.SetPlaceholderStyle(style)
 
 	wnd := u.CreateModalDialog(CreateModalDialogParam{

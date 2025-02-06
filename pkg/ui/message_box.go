@@ -28,7 +28,7 @@ func (u *UI) ShowMessageBox(param ShowMessageBoxParam) {
 	fmt.Fprint(txtMessage, param.message)
 	form.AddFormItem(txtMessage)
 	form.SetButtonsAlign(tview.AlignCenter)
-	form.SetButtonBackgroundColor(u.Theme.Colors.ButtonColor)
+	form.SetButtonStyle(u.Theme.Style.ButtonStyle)
 	form.SetBackgroundColor(u.Theme.Colors.WindowColor)
 
 	wnd := u.CreateModalDialog(CreateModalDialogParam{
