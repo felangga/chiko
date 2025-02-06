@@ -2,11 +2,14 @@ package grpc
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 
 	"github.com/felangga/chiko/pkg/entity"
 )
+
+const GRPC_TIMEOUT = time.Second * 10
 
 type GRPC struct {
 	Ctx           context.Context
@@ -24,10 +27,10 @@ func NewGRPC(logChannel chan entity.Log, outputChannel chan entity.Output) GRPC 
 	}
 
 	g := GRPC{
-		context.Background(),
-		&conn,
-		logChannel,
-		outputChannel,
+		Ctx:           context.Background(),
+		Conn:          &conn,
+		LogChannel:    logChannel,
+		OutputChannel: outputChannel,
 	}
 
 	return g

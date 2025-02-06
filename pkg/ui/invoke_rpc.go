@@ -28,7 +28,7 @@ func (u *UI) InvokeRPC() {
 	if err != nil {
 		u.PrintOutput(entity.Output{
 			Content:        err.Error(),
-			ShowTimeHeader: false,
+			WithHeader:     true,
 		})
 		return
 	}

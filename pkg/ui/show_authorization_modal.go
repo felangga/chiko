@@ -29,10 +29,9 @@ func (u *UI) ShowAuthorizationModal() {
 		Italic(true)
 
 	txtAuthorization.SetPlaceholder("Set token without the Bearer prefix")
-	txtAuthorization.SetPlaceholderTextColor(u.Theme.Colors.PlaceholderColor)
 	txtAuthorization.SetPlaceholderStyle(style)
 
-	wnd := u.CreateModalDialog(CreateModalDiaLog{
+	wnd := u.CreateModalDialog(CreateModalDialogParam{
 		title:         " 🔑 Authorization ",
 		rootView:      txtAuthorization,
 		draggable:     true,

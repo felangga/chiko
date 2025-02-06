@@ -48,8 +48,8 @@ func (u *UI) ShowBookmarkNameModal(parentWND winman.Window, onEnter func(bookmar
 	bookmarkName := tview.NewInputField().SetText(u.GRPC.Conn.Name)
 	bookmarkName.SetFieldBackgroundColor(u.Theme.Colors.WindowColor)
 
-	wnd := u.CreateModalDialog(CreateModalDiaLog{
-		title:         " ✏️ Enter Bookmark Name ",
+	wnd := u.CreateModalDialog(CreateModalDialogParam{
+		title:         " Enter Bookmark Name ",
 		rootView:      bookmarkName,
 		draggable:     true,
 		size:          winSize{0, 0, 80, 1},
@@ -74,8 +74,9 @@ func (u *UI) ShowBookmarkCategoryModal(onSelectedCategory func(wnd winman.Window
 	list := tview.NewList()
 	list.ShowSecondaryText(false)
 	list.SetBackgroundColor(u.Theme.Colors.WindowColor)
+	list.SetMainTextStyle(u.Theme.Style.ListMainTextStyle)
 
-	wnd := u.CreateModalDialog(CreateModalDiaLog{
+	wnd := u.CreateModalDialog(CreateModalDialogParam{
 		title:         " 📚 Select Bookmark Category ",
 		rootView:      list,
 		draggable:     true,
@@ -116,7 +117,7 @@ func (u *UI) ShowCreateNewCategoryModal(parentWND *winman.WindowBase, list *tvie
 	catName := tview.NewInputField().SetText(u.GRPC.Conn.Name)
 	catName.SetFieldBackgroundColor(u.Theme.Colors.WindowColor)
 
-	mdlNewCategory := u.CreateModalDialog(CreateModalDiaLog{
+	mdlNewCategory := u.CreateModalDialog(CreateModalDialogParam{
 		title:         " 📁 Enter New Category Name ",
 		rootView:      catName,
 		draggable:     true,

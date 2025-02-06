@@ -20,11 +20,6 @@ func (u *UI) ShowSetRequestMethodModal() {
 		return
 	}
 
-	// Set placeholder text and style
-	style := tcell.StyleDefault.
-		Background(u.Theme.Colors.PlaceholderColor).
-		Italic(true)
-
 	listMethods := tview.NewList().
 		ShowSecondaryText(false)
 	listMethods.SetBorderPadding(1, 0, 0, 0)
@@ -37,16 +32,16 @@ func (u *UI) ShowSetRequestMethodModal() {
 	txtSearch := tview.NewInputField().
 		SetText("").
 		SetPlaceholder(" 🔍 Search methods...").
-		SetPlaceholderStyle(style)
+		SetPlaceholderStyle(u.Theme.Style.PlaceholderStyle)
 
-	txtSearch.SetFieldBackgroundColor(u.Theme.Colors.PlaceholderColor)
+	txtSearch.SetFieldStyle(u.Theme.Style.FieldStyle)
 
 	wndLayer := tview.NewFlex()
 	wndLayer.SetDirection(tview.FlexRow)
 	wndLayer.AddItem(txtSearch, 1, 1, true)
 	wndLayer.AddItem(listMethods, 0, 1, false)
 
-	wnd := u.CreateModalDialog(CreateModalDiaLog{
+	wnd := u.CreateModalDialog(CreateModalDialogParam{
 		title:         " 📡 Select RPC Methods ",
 		rootView:      wndLayer,
 		draggable:     true,

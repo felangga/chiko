@@ -18,11 +18,15 @@ type Session struct {
 	RequestPayload    string                   `json:"request_payload"`
 	DescriptorSource  grpcurl.DescriptorSource `json:"-"`
 	Metadata          []*Metadata              `json:"metadata"`
+
+	// SSL Certificates
+	EnableTLS          bool  `json:"enable_tls"`
+	SSLCert            *Cert `json:"ssl_cert"`
+	InsecureSkipVerify bool  `json:"insecure_skip_verify"`
 }
 
 // ParseMetadata used to convert the metadata and authorization parameters to array of strings
 func (s *Session) ParseMetadata() []string {
-
 	// Convert metadata to array of strings
 	result := make([]string, 0, len(s.Metadata))
 	for _, v := range s.Metadata {

@@ -54,5 +54,4 @@ func (u *UI) InitBookmarkMenu_SetSelection(bookmarkList *tview.TreeView) {
 			node.SetExpanded(!node.IsExpanded())
 		}
 	})
-
 }

@@ -12,7 +12,7 @@ type winSize struct {
 	height int
 }
 
-type CreateModalDiaLog struct {
+type CreateModalDialogParam struct {
 	title         string
 	rootView      tview.Primitive
 	draggable     bool
@@ -21,8 +21,8 @@ type CreateModalDiaLog struct {
 	fallbackFocus tview.Primitive
 }
 
-// CreateModalDialog is a helper to create a modal dialog window
-func (u *UI) CreateModalDialog(param CreateModalDiaLog) *winman.WindowBase {
+// CreateModalDialogParam is a helper to create a modal dialog window
+func (u *UI) CreateModalDialog(param CreateModalDialogParam) *winman.WindowBase {
 	wnd := winman.NewWindow().Show()
 
 	wnd.SetTitle(param.title)

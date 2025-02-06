@@ -19,7 +19,7 @@ func (u *UI) ShowMetadataModal() {
 	form := tview.NewForm()
 	form.SetButtonsAlign(tview.AlignRight)
 	form.SetBackgroundColor(u.Theme.Colors.WindowColor)
-	form.SetButtonBackgroundColor(u.Theme.Colors.ButtonColor)
+	form.SetButtonStyle(u.Theme.Style.ButtonStyle)
 
 	flex := tview.NewFlex()
 	flex.SetBorderPadding(1, 0, 1, 1)
@@ -27,7 +27,7 @@ func (u *UI) ShowMetadataModal() {
 	flex.AddItem(table, 0, 8, true)
 	flex.AddItem(form, 0, 1, false)
 
-	wnd := u.CreateModalDialog(CreateModalDiaLog{
+	wnd := u.CreateModalDialog(CreateModalDialogParam{
 		title:         " 📖 Metadata ",
 		rootView:      flex,
 		draggable:     true,
@@ -166,8 +166,8 @@ func (u *UI) ShowMetadataModal_RefreshMetadataTable(table *tview.Table) {
 func (u *UI) showAddMetadataModal(parentWnd *winman.WindowBase, table *tview.Table) {
 	form := tview.NewForm()
 	form.SetBackgroundColor(u.Theme.Colors.WindowColor)
-	form.SetButtonBackgroundColor(u.Theme.Colors.ButtonColor)
-	form.SetFieldBackgroundColor(u.Theme.Colors.FieldColor)
+	form.SetButtonStyle(u.Theme.Style.ButtonStyle)
+	form.SetFieldStyle(u.Theme.Style.FieldStyle)
 	form.SetButtonsAlign(tview.AlignRight)
 
 	inpKey := tview.NewInputField()
@@ -183,7 +183,7 @@ func (u *UI) showAddMetadataModal(parentWnd *winman.WindowBase, table *tview.Tab
 	chkActive.SetLabel("Active")
 	form.AddFormItem(chkActive)
 
-	wnd := u.CreateModalDialog(CreateModalDiaLog{
+	wnd := u.CreateModalDialog(CreateModalDialogParam{
 		title:         " Add Metadata ",
 		rootView:      form,
 		draggable:     true,
@@ -223,8 +223,8 @@ func (u *UI) showEditMetadataModal(parentWnd *winman.WindowBase, table *tview.Ta
 
 	form := tview.NewForm()
 	form.SetBackgroundColor(u.Theme.Colors.WindowColor)
-	form.SetButtonBackgroundColor(u.Theme.Colors.ButtonColor)
-	form.SetFieldBackgroundColor(u.Theme.Colors.FieldColor)
+	form.SetButtonStyle(u.Theme.Style.ButtonStyle)
+	form.SetFieldStyle(u.Theme.Style.FieldStyle)
 	form.SetButtonsAlign(tview.AlignRight)
 
 	inpKey := tview.NewInputField()
@@ -242,7 +242,7 @@ func (u *UI) showEditMetadataModal(parentWnd *winman.WindowBase, table *tview.Ta
 	chkActive.SetLabel("Active")
 	form.AddFormItem(chkActive)
 
-	wnd := u.CreateModalDialog(CreateModalDiaLog{
+	wnd := u.CreateModalDialog(CreateModalDialogParam{
 		title:         " Edit Metadata ",
 		rootView:      form,
 		draggable:     true,

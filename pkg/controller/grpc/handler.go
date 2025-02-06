@@ -30,12 +30,12 @@ type handler struct {
 
 func (h *handler) OnReceiveResponse(msg proto.Message) {
 	// Print headers to log window
-	headerResp := "Headers:"
+	headerResp := "  Headers:"
 	for key, values := range h.respHeaders {
-		headerResp += fmt.Sprintf("\n  - %s: %s", key, strings.Join(values, ","))
+		headerResp += fmt.Sprintf("\n    ► %s: %s", key, strings.Join(values, ","))
 	}
 
-	statusCode := fmt.Sprintf("Status code: %d %s", h.respStatus.Code(), h.respStatus.Message())
+	statusCode := fmt.Sprintf("  Status Code: %d %s", h.respStatus.Code(), h.respStatus.Message())
 
 	// Print the gRPC response
 	jsm := jsonpb.Marshaler{Indent: "  "}
@@ -50,15 +50,13 @@ func (h *handler) OnReceiveResponse(msg proto.Message) {
 	}
 
 	h.respMessages = append(h.respMessages, respStr)
-	output := fmt.Sprintf("\n%s\n\n%s\n%s", headerResp, statusCode, respStr)
+	output := fmt.Sprintf("\n%s\n\n%s\n\n%s", statusCode, headerResp, respStr)
 	out := entity.Output{
-		Content:        output,
-		ShowTimeHeader: false,
-		WithHeader:     true,
+		Content:    output,
+		WithHeader: true,
 	}
 
 	out.DumpLogToChannel(h.grpc.OutputChannel)
-
 }
 
 func (h *handler) OnResolveMethod(md *desc.MethodDescriptor) {

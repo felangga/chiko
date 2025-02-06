@@ -137,7 +137,7 @@ func (u *UI) doWriteToFile(textarea *tview.TextArea) {
 
 	txtPath := tview.NewInputField().SetText(dir + "/" + u.GRPC.Conn.ServerURL + ".txt")
 	txtPath.SetFieldBackgroundColor(u.Theme.Colors.WindowColor)
-	wnd := u.CreateModalDialog(CreateModalDiaLog{
+	wnd := u.CreateModalDialog(CreateModalDialogParam{
 		title:      " 💾 Export Path ",
 		draggable:  true,
 		resizeable: false,
