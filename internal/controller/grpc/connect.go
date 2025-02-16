@@ -6,12 +6,14 @@ import (
 	"crypto/x509"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/fullstorydev/grpcurl"
 	"github.com/jhump/protoreflect/grpcreflect"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/keepalive"
 	reflectpb "google.golang.org/grpc/reflection/grpc_reflection_v1alpha"
 
 	"github.com/felangga/chiko/internal/entity"
@@ -21,6 +23,13 @@ import (
 func (g *GRPC) Connect(serverURL string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), GRPC_TIMEOUT)
 	defer cancel()
+
+	if g.Conn.MaxTimeOut > 0 {
+		timeout := time.Duration(g.Conn.MaxTimeOut * float64(time.Second))
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithTimeout(ctx, timeout)
+		defer cancel()
+	}
 
 	var creds credentials.TransportCredentials
 
@@ -44,6 +53,18 @@ func (g *GRPC) Connect(serverURL string) error {
 	// Dial options
 	opts := []grpc.DialOption{
 		grpc.WithUserAgent("chiko/" + entity.APP_VERSION),
+	}
+
+	if g.Conn.KeepAliveTime > 0 {
+		timeout := time.Duration(g.Conn.KeepAliveTime * float64(time.Second))
+		opts = append(opts, grpc.WithKeepaliveParams(keepalive.ClientParameters{
+			Time:    timeout,
+			Timeout: timeout,
+		}))
+	}
+
+	if g.Conn.MaxMsgSz > 0 {
+		opts = append(opts, grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(g.Conn.MaxMsgSz)))
 	}
 
 	// Establish gRPC connection
