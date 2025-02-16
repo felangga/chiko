@@ -50,24 +50,22 @@ func (u UI) QuitApplication() {
 }
 
 func NewUI(startSession *entity.Session) UI {
-	output := make(chan entity.Output, 100)
 	logger := logger.New()
 
 	app := tview.NewApplication()
 	wm := winman.NewWindowManager()
-	grpc := grpc.NewGRPC(logger, output, startSession)
+	grpc := grpc.NewGRPC(logger, startSession)
 	bookmark := bookmark.NewBookmark()
 	storage := storage.NewStorage()
 
 	ui := UI{
-		App:           app,
-		WinMan:        wm,
-		GRPC:          &grpc,
-		Bookmark:      &bookmark,
-		Storage:       &storage,
-		LogChannel:    logger.Channel(),
-		OutputChannel: output,
-		Theme:         &entity.TerminalTheme,
+		App:        app,
+		WinMan:     wm,
+		GRPC:       &grpc,
+		Bookmark:   &bookmark,
+		Storage:    &storage,
+		LogChannel: logger.Channel(),
+		Theme:      &entity.TerminalTheme,
 	}
 
 	ui.Layout = &ComponentLayout{

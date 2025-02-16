@@ -12,3 +12,9 @@ type Log struct {
 	Content string
 	Type    LogType
 }
+
+type Output struct {
+	Content     string
+	WithHeader  bool
+	CursorAtEnd bool
+}

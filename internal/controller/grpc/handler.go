@@ -52,7 +52,7 @@ func (h *handler) OnReceiveResponse(msg proto.Message) {
 		WithHeader: true,
 	}
 
-	out.DumpLogToChannel(h.grpc.OutputChannel)
+	h.grpc.Logger.PrintOutput(out)
 }
 
 func (h *handler) OnResolveMethod(md *desc.MethodDescriptor) {
