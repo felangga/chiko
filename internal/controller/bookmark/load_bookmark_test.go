@@ -37,7 +37,10 @@ func TestLoadBookmarks(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to marshal categories: %v", err)
 	}
-	os.WriteFile(tempFile.Name(), bookmarkJSON, 0644)
+	err = os.WriteFile(tempFile.Name(), bookmarkJSON, 0644)
+	if err != nil {
+		t.Fatalf("failed to write file: %v", err)
+	}
 
 	err = bookmark.LoadBookmarks()
 	if err != nil {
@@ -49,7 +52,11 @@ func TestLoadBookmarks(t *testing.T) {
 	}
 
 	// Test case 3: Corrupted bookmarks file
-	os.WriteFile(tempFile.Name(), []byte("corrupted data"), 0644)
+	err = os.WriteFile(tempFile.Name(), []byte("corrupted data"), 0644)
+	if err != nil {
+		t.Errorf("expected no error, got %v", err)
+	}
+
 	err = bookmark.LoadBookmarks()
 	if err == nil {
 		t.Errorf("expected an error, got none")

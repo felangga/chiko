@@ -56,8 +56,9 @@ func NewUI() UI {
 	app := tview.NewApplication()
 	wm := winman.NewWindowManager()
 	grpc := grpc.NewGRPC(logger, &entity.Session{
-		ID:        uuid.New(),
-		ServerURL: "localhost:50051",
+		ID:                 uuid.New(),
+		ServerURL:          "localhost:50051",
+		AllowUnknownFields: true,
 	})
 	bookmark := bookmark.NewBookmark()
 	storage := storage.NewStorage()

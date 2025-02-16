@@ -71,7 +71,7 @@ func (g *GRPC) InvokeRPC() error {
 			return err
 		}
 
-		return fmt.Errorf(formattedStatus)
+		return fmt.Errorf("%s", formattedStatus)
 	}
 
 	return nil
