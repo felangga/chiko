@@ -20,7 +20,7 @@ import (
 )
 
 // Connect is used to connect to the server and doing check if the server support server reflection
-func (g *GRPC) Connect(serverURL string) error {
+func (g *GRPC) Connect() error {
 	ctx, cancel := context.WithTimeout(context.Background(), GRPC_TIMEOUT)
 	defer cancel()
 
@@ -37,8 +37,6 @@ func (g *GRPC) Connect(serverURL string) error {
 	if err := g.resetActiveConnection(); err != nil {
 		return fmt.Errorf("failed to reset connection: %w", err)
 	}
-
-	g.Conn.ServerURL = serverURL
 
 	if g.Conn.EnableTLS {
 		// Configure TLS credentials
@@ -67,12 +65,12 @@ func (g *GRPC) Connect(serverURL string) error {
 	}
 
 	// Establish gRPC connection
-	conn, err := grpcurl.BlockingDial(ctx, "tcp", serverURL, creds, opts...)
+	conn, err := grpcurl.BlockingDial(ctx, "tcp", g.Conn.ServerURL, creds, opts...)
 	if err != nil {
-		return fmt.Errorf("failed to dial server %s: %w", serverURL, err)
+		return fmt.Errorf("failed to dial server %s: %w", g.Conn.ServerURL, err)
 	}
 	g.Conn.ActiveConnection = conn
-	g.Logger.Info("✅ connected to [blue]" + serverURL)
+	g.Logger.Info("✅ connected to [blue]" + g.Conn.ServerURL)
 
 	// Server reflection
 	if err := g.setupServerReflection(ctx, conn); err != nil {

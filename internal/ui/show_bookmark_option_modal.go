@@ -152,7 +152,9 @@ func (u *UI) ApplyBookmark(session entity.Session) {
 	*u.GRPC.Conn = session
 
 	go func() {
-		err := u.GRPC.Connect(u.GRPC.Conn.ServerURL)
+		u.GRPC.Conn.ServerURL = txtServerURL.GetText()
+
+		err := u.GRPC.Connect()
 		if err != nil {
 			u.PrintLog(entity.Log{
 				Content: "❌ failed to connect to [blue]" + u.GRPC.Conn.ServerURL + " [red]" + err.Error(),

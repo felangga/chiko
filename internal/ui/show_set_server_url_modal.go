@@ -105,8 +105,8 @@ func (u *UI) doConnect(wnd *winman.WindowBase) {
 			Content: "🌏 server URL set to [blue]" + txtServerURL.GetText() + ", connecting...",
 			Type:    entity.LOG_INFO,
 		})
-
-		err := u.GRPC.Connect(txtServerURL.GetText())
+		u.GRPC.Conn.ServerURL = txtServerURL.GetText()
+		err := u.GRPC.Connect()
 		if err != nil {
 			u.PrintLog(entity.Log{
 				Content: "❌ failed to connect to [blue]" + txtServerURL.GetText() + " [red]" + err.Error(),
