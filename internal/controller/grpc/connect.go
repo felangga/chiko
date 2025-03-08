@@ -39,7 +39,6 @@ func (g *GRPC) Connect(serverURL string) error {
 	}
 
 	g.Conn.ServerURL = serverURL
-	g.Logger.Info("🌏 server URL set to [blue]" + serverURL + ", connecting...")
 
 	if g.Conn.EnableTLS {
 		// Configure TLS credentials

@@ -66,7 +66,8 @@ func (f Flag) Validate() error {
 func ParseFlags() (entity.Session, error) {
 	f := Flag{}
 
-	// Define flags
+	// Flags from grpcurl
+	// Some flags are removed due not supported with Chiko
 	flag.BoolVar(&f.Plaintext, "plaintext", false, "Use plain-text HTTP/2 when connecting to server (no TLS)")
 	flag.BoolVar(&f.Insecure, "insecure", false, "Skip server certificate and domain verification")
 	flag.StringVar(&f.CACert, "cacert", "", "File containing trusted root certificates for verifying the server")
