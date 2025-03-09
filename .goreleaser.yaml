@@ -3,7 +3,7 @@ project_name: chiko
 
 builds:
   - id: chiko
-    main: .
+    main: cmd/chiko/main.go
     goos:
       - linux
       - windows
