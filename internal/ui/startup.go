@@ -4,19 +4,25 @@ import (
 	"encoding/base64"
 	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/rivo/tview"
 
 	"github.com/felangga/chiko/internal/entity"
 )
 
 func (u *UI) startupSequence() {
+	u.loadStartupUI()
+	u.loadBookmarks()
+	u.startLogDumper()
+	u.startArgsConnection()
+}
+
+// loadStartupUI displays the welcome message and banner
+func (u *UI) loadStartupUI() {
 	u.PrintLog(entity.Log{
 		Content: fmt.Sprintf("✨ Welcome to Chiko v%s", entity.APP_VERSION),
 		Type:    entity.LOG_INFO,
 	})
-
-	u.loadBookmarks()
-	u.logDumper()
 
 	banner, _ := base64.StdEncoding.DecodeString(entity.BANNER)
 	u.PrintOutput(entity.Output{
@@ -24,23 +30,30 @@ func (u *UI) startupSequence() {
 		WithHeader:  false,
 		CursorAtEnd: false,
 	})
-
 }
 
-func (u *UI) loadBookmarks() {
-	// Before v.0.0.4, the default bookmark file location is at binary folder
-	// Thus we need to move the bookmark file to the new location to the OS default config folder
-	err := u.Bookmark.MigrateBookmark()
-	if err != nil {
-		u.PrintLog(entity.Log{
-			Content: fmt.Sprintf("❌ failed to migrate bookmarks, err: %v", err),
-			Type:    entity.LOG_ERROR,
-		})
+// startArgsConnection handle the connection request from command line arguments
+func (u *UI) startArgsConnection() {
+	if u.GRPC.Conn.ID == uuid.Nil {
 		return
 	}
 
+	go func() {
+		err := u.GRPC.Connect()
+		if err != nil {
+			u.PrintLog(entity.Log{
+				Content: err.Error(),
+				Type:    entity.LOG_ERROR,
+			})
+			return
+		}
+	}()
+}
+
+// loadBookmarks loads the bookmarks from file
+func (u *UI) loadBookmarks() {
 	// Load bookmarks from file
-	err = u.Bookmark.LoadBookmarks()
+	err := u.Bookmark.LoadBookmarks()
 	if err != nil {
 		u.PrintLog(entity.Log{
 			Content: fmt.Sprintf("❌ failed to load bookmarks, err: %v", err),
@@ -81,7 +94,7 @@ func (u *UI) RefreshBookmarkList() int16 {
 }
 
 // logDumper is used to dump log messages from channels to log window
-func (u *UI) logDumper() {
+func (u *UI) startLogDumper() {
 	go func() {
 		for {
 			select {

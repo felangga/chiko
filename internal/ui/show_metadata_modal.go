@@ -9,7 +9,6 @@ import (
 )
 
 func (u *UI) ShowMetadataModal() {
-
 	table := tview.NewTable()
 	table.SetBorders(false).
 		SetSelectable(true, false).

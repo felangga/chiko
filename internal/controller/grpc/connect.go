@@ -6,21 +6,29 @@ import (
 	"crypto/x509"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/fullstorydev/grpcurl"
 	"github.com/jhump/protoreflect/grpcreflect"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
-	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/keepalive"
 	reflectpb "google.golang.org/grpc/reflection/grpc_reflection_v1alpha"
 
 	"github.com/felangga/chiko/internal/entity"
 )
 
 // Connect is used to connect to the server and doing check if the server support server reflection
-func (g *GRPC) Connect(serverURL string) error {
+func (g *GRPC) Connect() error {
 	ctx, cancel := context.WithTimeout(context.Background(), GRPC_TIMEOUT)
 	defer cancel()
+
+	if g.Conn.MaxTimeOut > 0 {
+		timeout := time.Duration(g.Conn.MaxTimeOut * float64(time.Second))
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithTimeout(ctx, timeout)
+		defer cancel()
+	}
 
 	var creds credentials.TransportCredentials
 
@@ -28,9 +36,6 @@ func (g *GRPC) Connect(serverURL string) error {
 	if err := g.resetActiveConnection(); err != nil {
 		return fmt.Errorf("failed to reset connection: %w", err)
 	}
-
-	g.Conn.ServerURL = serverURL
-	g.Logger.Info("🌏 server URL set to [blue]" + serverURL + ", connecting...")
 
 	if g.Conn.EnableTLS {
 		// Configure TLS credentials
@@ -46,16 +51,34 @@ func (g *GRPC) Connect(serverURL string) error {
 		grpc.WithUserAgent("chiko/" + entity.APP_VERSION),
 	}
 
+	if g.Conn.KeepAliveTime > 0 {
+		timeout := time.Duration(g.Conn.KeepAliveTime * float64(time.Second))
+		opts = append(opts, grpc.WithKeepaliveParams(keepalive.ClientParameters{
+			Time:    timeout,
+			Timeout: timeout,
+		}))
+	}
+
+	if g.Conn.MaxMsgSz > 0 {
+		opts = append(opts, grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(g.Conn.MaxMsgSz)))
+	}
+
 	// Establish gRPC connection
-	conn, err := grpcurl.BlockingDial(ctx, "tcp", serverURL, creds, opts...)
+	conn, err := grpcurl.BlockingDial(ctx, "tcp", g.Conn.ServerURL, creds, opts...)
 	if err != nil {
-		return fmt.Errorf("failed to dial server %s: %w", serverURL, err)
+		return fmt.Errorf("failed to dial server %s: %w", g.Conn.ServerURL, err)
 	}
 	g.Conn.ActiveConnection = conn
-	g.Logger.Info("✅ connected to [blue]" + serverURL)
+	g.Logger.Info("✅ connected to [blue]" + g.Conn.ServerURL)
 
 	// Server reflection
 	if err := g.setupServerReflection(ctx, conn); err != nil {
+		return err
+	}
+
+	// Check if selected service and methods is not available
+	err = g.CheckSelectedMethod()
+	if err != nil {
 		return err
 	}
 
@@ -81,29 +104,27 @@ func (g *GRPC) resetActiveConnection() error {
 }
 
 func (g *GRPC) configureTLSCredentials() (credentials.TransportCredentials, error) {
-	if g.Conn.SSLCert == nil {
-		return insecure.NewCredentials(), nil
-	}
-
 	caCertPool := x509.NewCertPool()
 	var certs tls.Certificate
 
-	if g.Conn.SSLCert.ClientCert_Path != nil && g.Conn.SSLCert.ClientKey_Path != nil {
-		var err error
-		certs, err = tls.LoadX509KeyPair(*g.Conn.SSLCert.ClientCert_Path, *g.Conn.SSLCert.ClientKey_Path)
-		if err != nil {
-			return nil, fmt.Errorf("failed to load client certificate: %w", err)
-		}
-	}
-
-	if g.Conn.SSLCert.CA_Path != nil {
-		caCert, err := os.ReadFile(*g.Conn.SSLCert.CA_Path)
-		if err != nil {
-			return nil, fmt.Errorf("failed to read CA certificate: %w", err)
+	if g.Conn.SSLCert != nil {
+		if g.Conn.SSLCert.ClientCert_Path != nil && g.Conn.SSLCert.ClientKey_Path != nil {
+			var err error
+			certs, err = tls.LoadX509KeyPair(*g.Conn.SSLCert.ClientCert_Path, *g.Conn.SSLCert.ClientKey_Path)
+			if err != nil {
+				return nil, fmt.Errorf("failed to load client certificate: %w", err)
+			}
 		}
 
-		if !caCertPool.AppendCertsFromPEM(caCert) {
-			return nil, fmt.Errorf("failed to append CA certificate to pool")
+		if g.Conn.SSLCert.CA_Path != nil {
+			caCert, err := os.ReadFile(*g.Conn.SSLCert.CA_Path)
+			if err != nil {
+				return nil, fmt.Errorf("failed to read CA certificate: %w", err)
+			}
+
+			if !caCertPool.AppendCertsFromPEM(caCert) {
+				return nil, fmt.Errorf("failed to append CA certificate to pool")
+			}
 		}
 	}
 
@@ -139,4 +160,18 @@ func (g *GRPC) setupServerReflection(ctx context.Context, conn *grpc.ClientConn)
 	}
 
 	return nil
+}
+
+func (g *GRPC) CheckSelectedMethod() error {
+	if g.Conn.SelectedMethod == nil {
+		return nil
+	}
+
+	for _, methods := range g.Conn.AvailableMethods {
+		if methods == *g.Conn.SelectedMethod {
+			return nil
+		}
+	}
+
+	return fmt.Errorf("❗ method %s not found", *g.Conn.SelectedMethod)
 }

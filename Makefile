@@ -5,6 +5,7 @@ BINARY_NAME=chiko
 VERSION=$(shell git describe --tags --always --dirty)
 BUILD_DIR=build
 CMD_DIR=cmd/chiko
+INSTALL_DIR=/usr/local/bin
 
 # Go parameters
 GOCMD=go
@@ -25,6 +26,12 @@ all: clean test build
 build:
 	@echo "Building $(BINARY_NAME)..."
 	$(GOBUILD) $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME) $(CMD_DIR)/main.go
+	
+# Install the application
+.PHONY: install
+install: 
+	@echo "Installing $(BINARY_NAME)..."
+	cp $(BUILD_DIR)/$(BINARY_NAME) $(INSTALL_DIR)
 
 # Build for all platforms
 .PHONY: build-all

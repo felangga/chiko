@@ -24,6 +24,12 @@ type Session struct {
 	EnableTLS          bool  `json:"enable_tls"`
 	SSLCert            *Cert `json:"ssl_cert"`
 	InsecureSkipVerify bool  `json:"insecure_skip_verify"`
+
+	// GRPC Call Options
+	MaxMsgSz       int     `json:"max_msg_sz"`
+	ConnectTimeout float64 `json:"connect_timeout"`
+	MaxTimeOut     float64 `json:"max_timeout"`
+	KeepAliveTime  float64 `json:"keepalive_time"`
 }
 
 // ParseMetadata used to convert the metadata and authorization parameters to array of strings
@@ -36,12 +42,9 @@ func (s *Session) ParseMetadata() []string {
 		}
 	}
 
-	// Add the authorization to header
-	if s.Authorization != nil {
-		switch s.Authorization.AuthType {
-		case AuthTypeBearer:
-			result = append(result, "Authorization: Bearer "+s.Authorization.BearerToken.Token)
-		}
+	// Add the authorization to header if present
+	if s.Authorization != nil && s.Authorization.AuthType == AuthTypeBearer {
+		result = append(result, "Authorization: Bearer "+s.Authorization.BearerToken.Token)
 	}
 
 	return result

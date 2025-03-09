@@ -17,6 +17,7 @@ type ComponentStyle struct {
 	FieldStyle        tcell.Style
 	ListMainTextStyle tcell.Style
 	ListBorderStyle   tcell.Style
+	TextAreaStyle     tcell.Style
 }
 
 type Theme struct {
@@ -44,6 +45,10 @@ var (
 			FieldStyle: tcell.StyleDefault.
 				Background(tcell.GetColor("#666666")),
 			ListMainTextStyle: tcell.StyleDefault.
+				Background(tcell.GetColor("#444444")),
+			ListBorderStyle: tcell.StyleDefault.
+				Background(tcell.GetColor("#444444")),
+			TextAreaStyle: tcell.StyleDefault.
 				Background(tcell.GetColor("#444444")),
 		},
 	}

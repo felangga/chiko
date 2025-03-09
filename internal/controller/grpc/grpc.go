@@ -8,7 +8,10 @@ import (
 	"github.com/felangga/chiko/internal/logger"
 )
 
-const GRPC_TIMEOUT = time.Second * 10
+const (
+	GRPC_TIMEOUT          = time.Second * 10
+	GRPC_MAX_MESSAGE_SIZE = 4 * 1024 * 1024 // 4 MB
+)
 
 type GRPC struct {
 	Ctx    context.Context

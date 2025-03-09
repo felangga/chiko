@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/epiclabs-io/winman"
-	"github.com/google/uuid"
 	"github.com/rivo/tview"
 
 	"github.com/felangga/chiko/internal/controller/bookmark"
@@ -50,27 +49,24 @@ func (u UI) QuitApplication() {
 	u.App.Stop()
 }
 
-func NewUI() UI {
+func NewUI(session entity.Session) UI {
 	logger := logger.New()
 
 	app := tview.NewApplication()
 	wm := winman.NewWindowManager()
-	grpc := grpc.NewGRPC(logger, &entity.Session{
-		ID:                 uuid.New(),
-		ServerURL:          "localhost:50051",
-		AllowUnknownFields: true,
-	})
+	grpc := grpc.NewGRPC(logger, &session)
 	bookmark := bookmark.NewBookmark()
 	storage := storage.NewStorage()
 
 	ui := UI{
-		App:        app,
-		WinMan:     wm,
-		GRPC:       &grpc,
-		Bookmark:   &bookmark,
-		Storage:    &storage,
-		LogChannel: logger.Channel(),
-		Theme:      &entity.TerminalTheme,
+		App:           app,
+		WinMan:        wm,
+		GRPC:          &grpc,
+		Bookmark:      &bookmark,
+		Storage:       &storage,
+		LogChannel:    logger.LogChannel(),
+		OutputChannel: logger.OutputChannel(),
+		Theme:         &entity.TerminalTheme,
 	}
 
 	ui.Layout = &ComponentLayout{

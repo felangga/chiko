@@ -148,11 +148,10 @@ func (u *UI) populateBookmarkChoices(param populateBookmarkChoicesParam) {
 }
 
 func (u *UI) ApplyBookmark(session entity.Session) {
-	// Get selected connection
 	*u.GRPC.Conn = session
 
 	go func() {
-		err := u.GRPC.Connect(u.GRPC.Conn.ServerURL)
+		err := u.GRPC.Connect()
 		if err != nil {
 			u.PrintLog(entity.Log{
 				Content: "❌ failed to connect to [blue]" + u.GRPC.Conn.ServerURL + " [red]" + err.Error(),
@@ -190,7 +189,7 @@ func (u *UI) DeleteBookmark(b entity.Session) error {
 			}
 
 			// Refresh the bookmark list
-			_ = u.RefreshBookmarkList()
+			u.loadBookmarks()
 
 			return nil
 		}
@@ -203,14 +202,24 @@ func (u *UI) DeleteBookmark(b entity.Session) error {
 func (u *UI) OverwriteBookmark(b *entity.Session) error {
 	for i := 0; i < len(*u.Bookmark.Categories); i++ {
 		category := &(*u.Bookmark.Categories)[i]
-		for j, session := range category.Sessions {
+		for j := range category.Sessions {
+			session := &category.Sessions[j]
 			if session.ID == b.ID {
 				category.Sessions[j] = *u.GRPC.Conn
 				category.Sessions[j].Name = session.Name
 
-				return u.Bookmark.SaveBookmark()
+				err := u.Bookmark.SaveBookmark()
+				if err != nil {
+					return err
+				}
+
+				// Refresh the bookmark list
+				u.loadBookmarks()
+
+				return nil
 			}
 		}
 	}
+
 	return nil
 }
