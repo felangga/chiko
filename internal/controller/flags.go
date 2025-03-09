@@ -3,6 +3,7 @@ package controller
 import (
 	"flag"
 	"fmt"
+	"strings"
 
 	"github.com/google/uuid"
 
@@ -86,9 +87,33 @@ func ParseFlags() (entity.Session, error) {
 		return entity.Session{}, err
 	}
 
-	serverURL := "localhost:20010"
+	var (
+		method    *string
+		serverURL string = "localhost:20010"
+	)
+
 	if flag.NArg() > 0 {
-		serverURL = flag.Arg(0)
+		args := flag.Args()
+
+		// Skip "list" or "describe" if present
+		for len(args) > 0 && (args[0] == "list" || args[0] == "describe") {
+			args = args[1:]
+		}
+
+		if len(args) > 0 {
+			serverURL = args[0]
+			args = args[1:]
+
+			// Skip "list" or "describe" again if present
+			if len(args) > 0 && (args[0] == "list" || args[0] == "describe") {
+				args = args[1:]
+			}
+
+			if len(args) > 0 {
+				normalize := strings.ReplaceAll(args[0], "/", ".")
+				method = &normalize
+			}
+		}
 	}
 
 	return entity.Session{
@@ -102,6 +127,7 @@ func ParseFlags() (entity.Session, error) {
 		MaxTimeOut:         f.MaxTime,
 		ConnectTimeout:     f.ConnectTimeout,
 		KeepAliveTime:      f.KeepAliveTime,
+		SelectedMethod:     method,
 		SSLCert: &entity.Cert{
 			CA_Path:         &f.CACert,
 			ClientCert_Path: &f.Cert,

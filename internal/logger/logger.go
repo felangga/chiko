@@ -14,7 +14,7 @@ func New() *Logger {
 	}
 }
 
-func (l *Logger) Channel() chan entity.Log {
+func (l *Logger) LogChannel() chan entity.Log {
 	return l.logChannel
 }
 

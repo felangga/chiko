@@ -59,13 +59,14 @@ func NewUI(session entity.Session) UI {
 	storage := storage.NewStorage()
 
 	ui := UI{
-		App:        app,
-		WinMan:     wm,
-		GRPC:       &grpc,
-		Bookmark:   &bookmark,
-		Storage:    &storage,
-		LogChannel: logger.Channel(),
-		Theme:      &entity.TerminalTheme,
+		App:           app,
+		WinMan:        wm,
+		GRPC:          &grpc,
+		Bookmark:      &bookmark,
+		Storage:       &storage,
+		LogChannel:    logger.LogChannel(),
+		OutputChannel: logger.OutputChannel(),
+		Theme:         &entity.TerminalTheme,
 	}
 
 	ui.Layout = &ComponentLayout{

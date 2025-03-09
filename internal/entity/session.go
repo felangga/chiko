@@ -42,12 +42,9 @@ func (s *Session) ParseMetadata() []string {
 		}
 	}
 
-	// Add the authorization to header
-	if s.Authorization != nil {
-		switch s.Authorization.AuthType {
-		case AuthTypeBearer:
-			result = append(result, "Authorization: Bearer "+s.Authorization.BearerToken.Token)
-		}
+	// Add the authorization to header if present
+	if s.Authorization != nil && s.Authorization.AuthType == AuthTypeBearer {
+		result = append(result, "Authorization: Bearer "+s.Authorization.BearerToken.Token)
 	}
 
 	return result

@@ -33,7 +33,7 @@ func (u *UI) ShowRequestPayloadModal() {
 	requestPayload := u.GRPC.Conn.RequestPayload
 
 	// Create text area for filling the payload
-	txtPayload := tview.NewTextArea().SetText(requestPayload, true)
+	txtPayload := tview.NewTextArea().SetText(requestPayload, false)
 	txtPayload.SetSize(9, 100)
 
 	form := tview.NewForm()

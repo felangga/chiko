@@ -29,13 +29,12 @@ func (u *UI) startupSequence() {
 		err := u.GRPC.Connect()
 		if err != nil {
 			u.PrintLog(entity.Log{
-				Content: "❌ failed to connect to [blue]" + u.GRPC.Conn.ServerURL + " [red]" + err.Error(),
+				Content: err.Error(),
 				Type:    entity.LOG_ERROR,
 			})
 			return
 		}
 	}()
-
 }
 
 func (u *UI) loadBookmarks() {

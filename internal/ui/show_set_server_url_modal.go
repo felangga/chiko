@@ -100,6 +100,8 @@ func (u *UI) ShowSetServerURLModal_SetInputCapture(wnd *winman.WindowBase) {
 }
 
 func (u *UI) doConnect(wnd *winman.WindowBase) {
+	btnConnect.SetLabel("Connecting...")
+
 	go func() {
 		u.PrintLog(entity.Log{
 			Content: "🌏 server URL set to [blue]" + txtServerURL.GetText() + ", connecting...",
@@ -107,16 +109,17 @@ func (u *UI) doConnect(wnd *winman.WindowBase) {
 		})
 		u.GRPC.Conn.ServerURL = txtServerURL.GetText()
 		err := u.GRPC.Connect()
+		btnConnect.SetLabel("Connect")
 		if err != nil {
 			u.PrintLog(entity.Log{
 				Content: "❌ failed to connect to [blue]" + txtServerURL.GetText() + " [red]" + err.Error(),
 				Type:    entity.LOG_ERROR,
 			})
+
 			return
 		}
 
 		// Remove the window and restore focus to menu list
 		u.CloseModalDialog(wnd, u.Layout.MenuList)
 	}()
-
 }

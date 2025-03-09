@@ -10,24 +10,25 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-// InvokeRPC will invoke the configured payload and try to hit the server with it
-func (g *GRPC) InvokeRPC() error {
-	context, timeout := context.WithTimeout(context.Background(), GRPC_TIMEOUT)
-	defer timeout()
-
+func (g *GRPC) Validate() error {
 	if g.Conn.SelectedMethod == nil {
 		return fmt.Errorf("❗ no method selected")
 	}
-
 	if g.Conn.ActiveConnection == nil {
 		return fmt.Errorf("❗ no active connection")
 	}
 
-	// Construct metadata info
-	var metadata string
-	for _, meta := range g.Conn.ParseMetadata() {
-		metadata += "- " + meta + "\n"
+	return nil
+}
+
+// InvokeRPC will invoke the configured payload and try to hit the server with it
+func (g *GRPC) InvokeRPC() error {
+	if err := g.Validate(); err != nil {
+		return err
 	}
+
+	ctx, timeout := context.WithTimeout(context.Background(), GRPC_TIMEOUT)
+	defer timeout()
 
 	options := grpcurl.FormatOptions{
 		EmitJSONDefaultFields: true,
@@ -44,12 +45,10 @@ func (g *GRPC) InvokeRPC() error {
 		return err
 	}
 
-	h := &handler{
-		grpc: *g,
-	}
+	h := &handler{grpc: *g}
 
 	err = grpcurl.InvokeRPC(
-		context,
+		ctx,
 		g.Conn.DescriptorSource,
 		g.Conn.ActiveConnection,
 		*g.Conn.SelectedMethod,
@@ -70,7 +69,6 @@ func (g *GRPC) InvokeRPC() error {
 		if err != nil {
 			return err
 		}
-
 		return fmt.Errorf("%s", formattedStatus)
 	}
 

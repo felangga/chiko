@@ -7,7 +7,7 @@ import (
 
 func TestParseFlags(t *testing.T) {
 	// Set up the flags
-	os.Args = []string{"cmd", "--plaintext", "--connect-timeout", "10", "--cacert", "path/to/cacert", "grpcb.in:9000"}
+	os.Args = []string{"cmd", "--plaintext", "--connect-timeout", "10", "--cacert", "path/to/cacert", "grpcb.in:9000", "list", "hello.HelloService/SayHello"}
 
 	// Call the ParseFlags function
 	session, err := ParseFlags()
@@ -26,5 +26,9 @@ func TestParseFlags(t *testing.T) {
 	}
 	if session.ServerURL != "grpcb.in:9000" {
 		t.Errorf("expected ServerURL to be 'grpcb.in:9000', got %v", session.ServerURL)
+	}
+	expectedMethod := "hello.HelloService.SayHello"
+	if *session.SelectedMethod != expectedMethod {
+		t.Errorf("expected SelectedMethod to be '%s', got %v", expectedMethod, *session.SelectedMethod)
 	}
 }

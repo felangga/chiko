@@ -77,6 +77,12 @@ func (g *GRPC) Connect() error {
 		return err
 	}
 
+	// Check if selected service and methods is not available
+	err = g.CheckSelectedMethod()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -157,4 +163,14 @@ func (g *GRPC) setupServerReflection(ctx context.Context, conn *grpc.ClientConn)
 	}
 
 	return nil
+}
+
+func (g *GRPC) CheckSelectedMethod() error {
+	for _, methods := range g.Conn.AvailableMethods {
+		if methods == *g.Conn.SelectedMethod {
+			return nil
+		}
+	}
+
+	return fmt.Errorf("❗ method %s not found", *g.Conn.SelectedMethod)
 }
