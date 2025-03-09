@@ -53,7 +53,8 @@ func (g *GRPC) ExportGrpcurlCommand() (string, error) {
 
 	// Request options
 	if g.Conn.RequestPayload != "" {
-		builder.WriteString(" -d '" + g.Conn.RequestPayload + "'")
+		escapedPayload := strings.Replace(string(g.Conn.RequestPayload), "'", "'\\''", -1)
+		builder.WriteString(fmt.Sprintf(" -d '%s'", escapedPayload))
 	}
 	if g.Conn.AllowUnknownFields {
 		builder.WriteString(" -allow-unknown-fields")
