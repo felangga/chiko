@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/atotto/clipboard"
+	"github.com/epiclabs-io/winman"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 
@@ -69,6 +70,14 @@ func (u *UI) initOutputPanel_handleTextArea(textarea *tview.TextArea) {
 			Text:       "Dump To File",
 			OnExecute: func() {
 				u.doWriteToFile(textarea)
+			},
+		},
+		"exportgrpcurl": {
+			KeyComb:    'x',
+			CommandKey: "X",
+			Text:       "Export grpcurl",
+			OnExecute: func() {
+				u.doExportGrpcurlCommands()
 			},
 		},
 	}
@@ -173,6 +182,45 @@ func (u *UI) doWriteToFile(textarea *tview.TextArea) {
 		return event
 	})
 
+}
+
+func (u *UI) doExportGrpcurlCommands() {
+	content, err := u.GRPC.ExportGrpcurlCommand()
+	if err != nil {
+		u.ShowMessageBox(ShowMessageBoxParam{
+			title:   " Export grpcurl Commands ",
+			message: err.Error(),
+			buttons: []Button{
+				{
+					Name: "OK",
+					OnClick: func(wnd *winman.WindowBase) {
+						u.CloseModalDialog(wnd, u.Layout.MenuList)
+					},
+				},
+			},
+		})
+		return
+	}
+	u.ShowMessageBox(ShowMessageBoxParam{
+		title:   " Export grpcurl Commands ",
+		message: content,
+		buttons: []Button{
+			{
+				Name: "Copy",
+				OnClick: func(wnd *winman.WindowBase) {
+					err := clipboard.WriteAll(content)
+					if err != nil {
+						u.PrintLog(entity.Log{
+							Content: "❌ failed to copy to clipboard: " + err.Error(),
+							Type:    entity.LOG_ERROR,
+						})
+						return
+					}
+					u.CloseModalDialog(wnd, u.Layout.MenuList)
+				},
+			},
+		},
+	})
 }
 
 type Commands struct {

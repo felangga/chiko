@@ -21,7 +21,7 @@ type Flag struct {
 	AllowUnknownFields bool
 	ConnectTimeout     float64
 	KeepAliveTime      float64
-	MaxTime            float64
+	MaxTimeOut         float64
 	MaxMsgSz           int
 }
 
@@ -38,7 +38,7 @@ func (f Flag) Validate() error {
 	if f.KeepAliveTime < 0 {
 		return fmt.Errorf("The -keepalive-time argument must not be negative.")
 	}
-	if f.MaxTime < 0 {
+	if f.MaxTimeOut < 0 {
 		return fmt.Errorf("The -max-time argument must not be negative.")
 	}
 	if f.MaxMsgSz < 0 {
@@ -69,7 +69,7 @@ func ParseFlags() (entity.Session, error) {
 
 	// Flags from grpcurl
 	// Some flags are removed due not supported with Chiko
-	flag.BoolVar(&f.Plaintext, "plaintext", false, "Use plain-text HTTP/2 when connecting to server (no TLS)")
+	flag.BoolVar(&f.Plaintext, "plaintext", true, "Use plain-text HTTP/2 when connecting to server (no TLS)")
 	flag.BoolVar(&f.Insecure, "insecure", false, "Skip server certificate and domain verification")
 	flag.StringVar(&f.CACert, "cacert", "", "File containing trusted root certificates for verifying the server")
 	flag.StringVar(&f.Cert, "cert", "", "File containing client certificate (public key)")
@@ -78,7 +78,7 @@ func ParseFlags() (entity.Session, error) {
 	flag.BoolVar(&f.AllowUnknownFields, "allow-unknown-fields", false, "Allow unknown fields in JSON request")
 	flag.Float64Var(&f.ConnectTimeout, "connect-timeout", 10, "Maximum time to wait for connection (seconds)")
 	flag.Float64Var(&f.KeepAliveTime, "keepalive-time", 0, "Maximum idle time before keepalive probe")
-	flag.Float64Var(&f.MaxTime, "max-time", 0, "Maximum total operation time")
+	flag.Float64Var(&f.MaxTimeOut, "max-time", 0, "Maximum total operation time")
 	flag.IntVar(&f.MaxMsgSz, "max-msg-sz", 4*1024*1024, "Maximum encoded response message size")
 
 	flag.Parse()
@@ -90,6 +90,8 @@ func ParseFlags() (entity.Session, error) {
 	var (
 		method    *string
 		serverURL string = "localhost:20010"
+		sslCert   *entity.Cert
+		conID     uuid.UUID
 	)
 
 	if flag.NArg() > 0 {
@@ -102,6 +104,7 @@ func ParseFlags() (entity.Session, error) {
 
 		if len(args) > 0 {
 			serverURL = args[0]
+			conID = uuid.New()
 			args = args[1:]
 
 			// Skip "list" or "describe" again if present
@@ -116,22 +119,26 @@ func ParseFlags() (entity.Session, error) {
 		}
 	}
 
+	if f.Cert != "" || f.Key != "" || f.CACert != "" {
+		sslCert = &entity.Cert{
+			CA_Path:         &f.CACert,
+			ClientCert_Path: &f.Cert,
+			ClientKey_Path:  &f.Key,
+		}
+	}
+
 	return entity.Session{
-		ID:                 uuid.New(),
+		ID:                 conID,
 		ServerURL:          serverURL,
 		EnableTLS:          !f.Plaintext,
 		InsecureSkipVerify: f.Insecure,
 		RequestPayload:     f.Data,
 		AllowUnknownFields: f.AllowUnknownFields,
 		MaxMsgSz:           f.MaxMsgSz,
-		MaxTimeOut:         f.MaxTime,
+		MaxTimeOut:         f.MaxTimeOut,
 		ConnectTimeout:     f.ConnectTimeout,
 		KeepAliveTime:      f.KeepAliveTime,
 		SelectedMethod:     method,
-		SSLCert: &entity.Cert{
-			CA_Path:         &f.CACert,
-			ClientCert_Path: &f.Cert,
-			ClientKey_Path:  &f.Key,
-		},
+		SSLCert:            sslCert,
 	}, nil
 }

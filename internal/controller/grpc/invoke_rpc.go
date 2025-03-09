@@ -10,7 +10,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (g *GRPC) Validate() error {
+func (g *GRPC) validateInvokeRPC() error {
 	if g.Conn.SelectedMethod == nil {
 		return fmt.Errorf("❗ no method selected")
 	}
@@ -23,7 +23,7 @@ func (g *GRPC) Validate() error {
 
 // InvokeRPC will invoke the configured payload and try to hit the server with it
 func (g *GRPC) InvokeRPC() error {
-	if err := g.Validate(); err != nil {
+	if err := g.validateInvokeRPC(); err != nil {
 		return err
 	}
 

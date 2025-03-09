@@ -12,7 +12,6 @@ import (
 	"github.com/jhump/protoreflect/grpcreflect"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
-	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/keepalive"
 	reflectpb "google.golang.org/grpc/reflection/grpc_reflection_v1alpha"
 
@@ -105,29 +104,27 @@ func (g *GRPC) resetActiveConnection() error {
 }
 
 func (g *GRPC) configureTLSCredentials() (credentials.TransportCredentials, error) {
-	if g.Conn.SSLCert == nil {
-		return insecure.NewCredentials(), nil
-	}
-
 	caCertPool := x509.NewCertPool()
 	var certs tls.Certificate
 
-	if g.Conn.SSLCert.ClientCert_Path != nil && g.Conn.SSLCert.ClientKey_Path != nil {
-		var err error
-		certs, err = tls.LoadX509KeyPair(*g.Conn.SSLCert.ClientCert_Path, *g.Conn.SSLCert.ClientKey_Path)
-		if err != nil {
-			return nil, fmt.Errorf("failed to load client certificate: %w", err)
-		}
-	}
-
-	if g.Conn.SSLCert.CA_Path != nil {
-		caCert, err := os.ReadFile(*g.Conn.SSLCert.CA_Path)
-		if err != nil {
-			return nil, fmt.Errorf("failed to read CA certificate: %w", err)
+	if g.Conn.SSLCert != nil {
+		if g.Conn.SSLCert.ClientCert_Path != nil && g.Conn.SSLCert.ClientKey_Path != nil {
+			var err error
+			certs, err = tls.LoadX509KeyPair(*g.Conn.SSLCert.ClientCert_Path, *g.Conn.SSLCert.ClientKey_Path)
+			if err != nil {
+				return nil, fmt.Errorf("failed to load client certificate: %w", err)
+			}
 		}
 
-		if !caCertPool.AppendCertsFromPEM(caCert) {
-			return nil, fmt.Errorf("failed to append CA certificate to pool")
+		if g.Conn.SSLCert.CA_Path != nil {
+			caCert, err := os.ReadFile(*g.Conn.SSLCert.CA_Path)
+			if err != nil {
+				return nil, fmt.Errorf("failed to read CA certificate: %w", err)
+			}
+
+			if !caCertPool.AppendCertsFromPEM(caCert) {
+				return nil, fmt.Errorf("failed to append CA certificate to pool")
+			}
 		}
 	}
 
@@ -166,6 +163,10 @@ func (g *GRPC) setupServerReflection(ctx context.Context, conn *grpc.ClientConn)
 }
 
 func (g *GRPC) CheckSelectedMethod() error {
+	if g.Conn.SelectedMethod == nil {
+		return nil
+	}
+
 	for _, methods := range g.Conn.AvailableMethods {
 		if methods == *g.Conn.SelectedMethod {
 			return nil
