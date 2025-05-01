@@ -48,4 +48,4 @@ go run ./...
 - Add support to import `.proto` files for services that don't support server reflection
 - Add support for any authorization types
 - Add an option to protect or lock the bookmark library
-- Add support to import and export from and to `grpcurl` command
+- ~Add support to import and export from and to `grpcurl` command~
