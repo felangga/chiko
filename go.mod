@@ -9,7 +9,7 @@ require (
 	github.com/golang/protobuf v1.5.4
 	github.com/google/go-cmp v0.6.0
 	github.com/jhump/protoreflect v1.17.0
-	github.com/rivo/tview v0.0.0-20241227133733-17b7edb88c57
+	github.com/rivo/tview v0.0.0-20250501113434-0c592cd31026
 	google.golang.org/grpc v1.69.2
 )
 
