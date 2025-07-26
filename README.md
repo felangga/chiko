@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🐥 Chiko - Beautiful gRPC TUI Client
+# 🐶 Chiko - Beautiful gRPC TUI Client
 
 **The developer-friendly terminal interface for gRPC that makes API testing a joy**
 
