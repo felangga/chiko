@@ -32,7 +32,7 @@ brew install felangga/chiko/chiko
 
 ### Go
 ```
-go install github.com/felangga/chiko@latest
+go install github.com/felangga/chiko/cmd/chiko@latest
 ```
 
 ### Manual
