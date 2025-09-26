@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/epiclabs-io/winman"
+	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 
 	"github.com/felangga/chiko/internal/controller/bookmark"
@@ -49,6 +50,66 @@ func (u UI) QuitApplication() {
 	u.App.Stop()
 }
 
+// setupGlobalKeyboardShortcuts sets up global keyboard shortcuts that work from any component
+func (u *UI) setupGlobalKeyboardShortcuts() {
+	u.App.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		// Check if user is currently typing in a text input field
+		if u.isTypingInTextField() {
+			return event
+		}
+
+		// Only handle global shortcuts for single key presses
+		if event.Key() == tcell.KeyRune {
+			switch event.Rune() {
+			case 'u':
+				u.ShowSetServerURLModal()
+				return nil
+			case 'm':
+				u.ShowSetRequestMethodModal()
+				return nil
+			case 'a':
+				u.ShowAuthorizationModal()
+				return nil
+			case 'd':
+				u.ShowMetadataModal()
+				return nil
+			case 'p':
+				u.ShowRequestPayloadModal()
+				return nil
+			case 'i':
+				u.InvokeRPC()
+				return nil
+			case 'b':
+				u.ShowSaveToBookmarkModal()
+				return nil
+			case 'q':
+				u.QuitApplication()
+				return nil
+			}
+		}
+
+		return event
+	})
+}
+
+// isTypingInTextField checks if the currently focused component is a text input field
+func (u *UI) isTypingInTextField() bool {
+	focused := u.App.GetFocus()
+	if focused == nil {
+		return false
+	}
+
+	// Check if the focused component is a text input field
+	switch focused.(type) {
+	case *tview.InputField:
+		return true
+	case *tview.TextArea:
+		return true
+	default:
+		return false
+	}
+}
+
 func NewUI(session entity.Session) UI {
 	logger := logger.New()
 
@@ -83,6 +144,9 @@ func NewUI(session entity.Session) UI {
 
 	window.Maximize()
 	app.SetRoot(wm, true)
+
+	// Set up global keyboard shortcuts
+	ui.setupGlobalKeyboardShortcuts()
 
 	ui.startupSequence()
 	return ui

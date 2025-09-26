@@ -94,12 +94,43 @@ func (u *UI) initOutputPanel_handleTextArea(textarea *tview.TextArea) {
 			return nil
 		}
 
-		for _, k := range commands {
-			if event.Key() == tcell.KeyRune && tcell.Key(event.Rune()) == tcell.Key(k.KeyComb) {
-				k.OnExecute()
+		// Handle output panel specific commands first
+		if event.Key() == tcell.KeyRune {
+			for _, k := range commands {
+				if tcell.Key(event.Rune()) == tcell.Key(k.KeyComb) {
+					k.OnExecute()
+					return nil
+				}
+			}
+
+			// If not handled by output panel commands, check global shortcuts
+			// This bypasses the global isTypingInTextField() check for this TextArea
+			switch event.Rune() {
+			case 'u':
+				u.ShowSetServerURLModal()
 				return nil
+			case 'm':
+				u.ShowSetRequestMethodModal()
+				return nil
+			case 'd':
+				u.ShowMetadataModal()
+				return nil
+			case 'p':
+				u.ShowRequestPayloadModal()
+				return nil
+			case 'i':
+				u.InvokeRPC()
+				return nil
+			case 'b':
+				u.ShowSaveToBookmarkModal()
+				return nil
+			case 'q':
+				u.QuitApplication()
+				return nil
+				// Note: 'a' is not included here because it's handled by output panel commands (Select All)
 			}
 		}
+
 		return event
 	})
 }

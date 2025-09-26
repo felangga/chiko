@@ -3,6 +3,7 @@ package ui
 import (
 	"encoding/base64"
 	"fmt"
+	"os"
 
 	"github.com/google/uuid"
 	"github.com/rivo/tview"
@@ -55,6 +56,24 @@ func (u *UI) loadBookmarks() {
 	// Load bookmarks from file
 	err := u.Bookmark.LoadBookmarks()
 	if err != nil {
+		if os.IsNotExist(err) {
+			// If the file does not exist, create a new one
+			err = u.Bookmark.SaveBookmark()
+			if err != nil {
+				u.PrintLog(entity.Log{
+					Content: fmt.Sprintf("❌ failed to create new bookmark file, err: %v", err),
+					Type:    entity.LOG_ERROR,
+				})
+				return
+			}
+
+			u.PrintLog(entity.Log{
+				Content: "📁 new bookmark file created",
+				Type:    entity.LOG_INFO,
+			})
+			return
+		}
+
 		u.PrintLog(entity.Log{
 			Content: fmt.Sprintf("❌ failed to load bookmarks, err: %v", err),
 			Type:    entity.LOG_ERROR,
