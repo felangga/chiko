@@ -5,8 +5,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/felangga/chiko/internal/entity"
 	"github.com/google/uuid"
+
+	"github.com/felangga/chiko/internal/entity"
 )
 
 func TestLoadBookmarks(t *testing.T) {
@@ -37,7 +38,7 @@ func TestLoadBookmarks(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to marshal categories: %v", err)
 	}
-	err = os.WriteFile(tempFile.Name(), bookmarkJSON, 0644)
+	err = os.WriteFile(tempFile.Name(), bookmarkJSON, entity.FILE_PERMISSION)
 	if err != nil {
 		t.Fatalf("failed to write file: %v", err)
 	}
@@ -52,7 +53,7 @@ func TestLoadBookmarks(t *testing.T) {
 	}
 
 	// Test case 3: Corrupted bookmarks file
-	err = os.WriteFile(tempFile.Name(), []byte("corrupted data"), 0644)
+	err = os.WriteFile(tempFile.Name(), []byte("corrupted data"), entity.FILE_PERMISSION)
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
 	}

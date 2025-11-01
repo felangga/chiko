@@ -17,7 +17,7 @@ func (b *Bookmark) MigrateBookmark() error {
 
 	// Ensure the new directory exists
 	newDir := filepath.Dir(b.Path)
-	if err := os.MkdirAll(newDir, 0755); err != nil {
+	if err := os.MkdirAll(newDir, entity.DIR_PERMISSION); err != nil {
 		return err
 	}
 

@@ -15,7 +15,7 @@ func TestMigrateBookmark(t *testing.T) {
 	newFilePath := filepath.Join(tempDir, ".bookmarks")
 
 	// Create an old bookmark file
-	if err := os.WriteFile(oldFilePath, []byte("old bookmarks data"), 0644); err != nil {
+	if err := os.WriteFile(oldFilePath, []byte("old bookmarks data"), entity.FILE_PERMISSION); err != nil {
 		t.Fatalf("failed to create old bookmark file: %v", err)
 	}
 
@@ -29,7 +29,7 @@ func TestMigrateBookmark(t *testing.T) {
 	}
 
 	// Test case 2: Old bookmark file exists, should move it
-	if err := os.WriteFile(oldFilePath, []byte("old bookmarks data"), 0644); err != nil {
+	if err := os.WriteFile(oldFilePath, []byte("old bookmarks data"), entity.FILE_PERMISSION); err != nil {
 		t.Fatalf("failed to create old bookmark file: %v", err)
 	}
 	err = bookmark.MigrateBookmark()
@@ -42,7 +42,7 @@ func TestMigrateBookmark(t *testing.T) {
 
 	// Test case 3: Error in moving the file
 	// Simulate an error by removing the old file
-	if err := os.WriteFile(oldFilePath, []byte("old bookmarks data"), 0644); err != nil {
+	if err := os.WriteFile(oldFilePath, []byte("old bookmarks data"), entity.FILE_PERMISSION); err != nil {
 		t.Fatalf("failed to create old bookmark file: %v", err)
 	}
 	err = bookmark.MigrateBookmark()
