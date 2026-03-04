@@ -147,6 +147,43 @@ func (u *UI) populateBookmarkChoices(param populateBookmarkChoicesParam) {
 	})
 }
 
+// ShowDeleteBookmarkConfirmation shows the delete confirmation for a bookmark directly,
+// triggered by the Delete key on a focused session node.
+func (u *UI) ShowDeleteBookmarkConfirmation(bookmark *entity.Session) {
+	u.ShowMessageBox(ShowMessageBoxParam{
+		title:   " 🗑️ Delete Bookmark ",
+		message: fmt.Sprintf("Delete bookmark \"%s\"?", bookmark.Name),
+		buttons: []Button{
+			{
+				Name: "Yes",
+				OnClick: func(wnd *winman.WindowBase) {
+					err := u.DeleteBookmark(*bookmark)
+					if err != nil {
+						u.PrintLog(entity.Log{
+							Content: fmt.Sprintf("❌ failed to delete bookmark, err: %v", err),
+							Type:    entity.LOG_ERROR,
+						})
+						return
+					}
+
+					u.PrintLog(entity.Log{
+						Content: fmt.Sprintf("✅ bookmark [blue]%s [white]deleted", bookmark.Name),
+						Type:    entity.LOG_INFO,
+					})
+
+					u.CloseModalDialog(wnd, u.Layout.BookmarkList)
+				},
+			},
+			{
+				Name: "No",
+				OnClick: func(wnd *winman.WindowBase) {
+					u.CloseModalDialog(wnd, u.Layout.BookmarkList)
+				},
+			},
+		},
+	})
+}
+
 func (u *UI) ApplyBookmark(session entity.Session) {
 	*u.GRPC.Conn = session
 

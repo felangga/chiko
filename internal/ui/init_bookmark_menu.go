@@ -30,6 +30,19 @@ func (u *UI) InitBookmarkMenu_SetInputCapture(bookmarkList *tview.TreeView) {
 		case tcell.KeyTAB:
 			u.SetFocus(u.Layout.OutputPanel.Layout)
 			return nil
+		case tcell.KeyDelete:
+			// Delete key directly shows the delete confirmation for the focused node
+			currentNode := bookmarkList.GetCurrentNode()
+			if currentNode == nil {
+				return nil
+			}
+			switch ref := currentNode.GetReference().(type) {
+			case entity.Category:
+				u.ShowDeleteCategoryConfirmation(ref)
+			case *entity.Session:
+				u.ShowDeleteBookmarkConfirmation(ref)
+			}
+			return nil
 		}
 		return event
 	})
@@ -42,15 +55,11 @@ func (u *UI) InitBookmarkMenu_SetSelection(bookmarkList *tview.TreeView) {
 		if reference == nil {
 			return // Selecting the root node does nothing.
 		}
-		children := node.GetChildren()
-		if len(children) == 0 {
-			switch node.GetReference().(type) {
-			case *entity.Session:
-				getSession := node.GetReference().(*entity.Session)
-				u.ShowBookmarkOptionsModal(u.Layout.BookmarkList, getSession)
-			}
-		} else {
-			// Collapse if visible, expand if collapsed.
+
+		switch ref := node.GetReference().(type) {
+		case *entity.Session:
+			u.ShowBookmarkOptionsModal(u.Layout.BookmarkList, ref)
+		case entity.Category:
 			node.SetExpanded(!node.IsExpanded())
 		}
 	})
