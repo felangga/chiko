@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"fmt"
 
+	"github.com/gdamore/tcell/v2"
 	"github.com/google/uuid"
 	"github.com/rivo/tview"
 
@@ -15,6 +16,7 @@ func (u *UI) startupSequence() {
 	u.loadBookmarks()
 	u.startLogDumper()
 	u.startArgsConnection()
+	u.setupGlobalInputCapture()
 }
 
 // loadStartupUI displays the welcome message and banner
@@ -105,4 +107,39 @@ func (u *UI) startLogDumper() {
 			}
 		}
 	}()
+}
+
+// setupGlobalInputCapture sets up application-wide key bindings that mirror
+// the sidebar menu shortcuts, so they work regardless of which panel is focused.
+// Keys are suppressed when an InputField is focused to avoid interfering with text entry.
+func (u *UI) setupGlobalInputCapture() {
+	u.App.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		// Don't intercept shortcuts while the user is typing in an input field
+		if _, ok := u.App.GetFocus().(*tview.InputField); ok {
+			return event
+		}
+
+		switch event.Rune() {
+		case 'u':
+			u.ShowSetServerURLModal()
+		case 'm':
+			u.ShowSetRequestMethodModal()
+		case 'a':
+			u.ShowAuthorizationModal()
+		case 'd':
+			u.ShowMetadataModal()
+		case 'p':
+			u.ShowRequestPayloadModal()
+		case 'i':
+			u.InvokeRPC()
+		case 'b':
+			u.ShowSaveToBookmarkModal()
+		case 'q':
+			u.QuitApplication()
+		default:
+			return event
+		}
+
+		return nil
+	})
 }
