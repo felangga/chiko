@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"fmt"
 
+	"github.com/gdamore/tcell/v2"
 	"github.com/google/uuid"
 	"github.com/rivo/tview"
 
@@ -15,6 +16,7 @@ func (u *UI) startupSequence() {
 	u.loadBookmarks()
 	u.startLogDumper()
 	u.startArgsConnection()
+	u.setupGlobalInputCapture()
 }
 
 // loadStartupUI displays the welcome message and banner
@@ -105,4 +107,16 @@ func (u *UI) startLogDumper() {
 			}
 		}
 	}()
+}
+
+// setupGlobalInputCapture sets up application-wide key bindings that work
+// regardless of which component is currently focused.
+func (u *UI) setupGlobalInputCapture() {
+	u.App.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		if event.Rune() == 'q' {
+			u.QuitApplication()
+			return nil
+		}
+		return event
+	})
 }
