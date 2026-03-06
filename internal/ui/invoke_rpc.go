@@ -1,6 +1,8 @@
 package ui
 
 import (
+	"fmt"
+
 	"github.com/felangga/chiko/internal/entity"
 )
 
@@ -27,9 +29,19 @@ func (u *UI) InvokeRPC() {
 	err := u.GRPC.InvokeRPC()
 	if err != nil {
 		u.PrintOutput(entity.Output{
-			Content:        err.Error(),
-			WithHeader:     true,
+			Content:    err.Error(),
+			WithHeader: true,
 		})
 		return
 	}
+
+	// Record successful invocation in history
+	if err := u.History.AddEntry(*u.GRPC.Conn); err != nil {
+		u.PrintLog(entity.Log{
+			Content: fmt.Sprintf("⚠️ could not save history entry: %v", err),
+			Type:    entity.LOG_ERROR,
+		})
+	}
+
+	u.RefreshHistoryPanel()
 }

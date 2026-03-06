@@ -40,5 +40,7 @@ func (u *UI) PrintOutput(param entity.Output) {
 		newBuffer = param.Content
 	}
 
-	out.TextArea.SetText(newBuffer, param.CursorAtEnd)
+	go u.App.QueueUpdateDraw(func() {
+		out.TextArea.SetText(newBuffer, param.CursorAtEnd)
+	})
 }

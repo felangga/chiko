@@ -69,7 +69,7 @@ func (g *GRPC) Connect() error {
 		return fmt.Errorf("failed to dial server %s: %w", g.Conn.ServerURL, err)
 	}
 	g.Conn.ActiveConnection = conn
-	g.Logger.Info("✅ connected to [blue]" + g.Conn.ServerURL)
+	g.Logger.Info("✅ connected to [lightblue]" + g.Conn.ServerURL)
 
 	// Server reflection
 	if err := g.setupServerReflection(ctx, conn); err != nil {
