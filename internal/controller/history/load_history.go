@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/felangga/chiko/internal/entity"
+	"github.com/felangga/chiko/internal/utils"
 )
 
 // LoadHistory reads history entries from the history file
@@ -20,7 +21,17 @@ func (h *History) LoadHistory() error {
 		return err
 	}
 
-	if err := json.Unmarshal(file, h.Entries); err != nil {
+	decryptedData, err := utils.Decrypt(file)
+	if err != nil {
+		// If decryption fails, it could be an old unencrypted file or corrupt.
+		// For safety, we try unmarshaling the original file in case it was not encrypted.
+		if errJson := json.Unmarshal(file, h.Entries); errJson == nil {
+			return nil
+		}
+		return fmt.Errorf("failed to decrypt history file: %v", err)
+	}
+
+	if err := json.Unmarshal(decryptedData, h.Entries); err != nil {
 		return fmt.Errorf("failed to read history file, maybe corrupted: %v", err)
 	}
 
@@ -29,7 +40,7 @@ func (h *History) LoadHistory() error {
 
 func (h *History) prepareHistory() error {
 	if _, err := os.Stat(h.Path); err == nil {
-		return nil // file already exists
+		return nil
 	}
 
 	if err := os.MkdirAll(filepath.Dir(h.Path), entity.DIR_PERMISSION); err != nil {

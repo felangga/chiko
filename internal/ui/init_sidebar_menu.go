@@ -21,7 +21,8 @@ func (u *UI) InitSidebarMenu() *tview.List {
 	menuList.AddItem("Request Payload", "", 'p', u.ShowRequestPayloadModal)
 	menuList.AddItem("Invoke", "", 'i', u.InvokeRPC)
 	menuList.AddItem("[::d]"+strings.Repeat(string(tcell.RuneHLine), 25), "", 0, nil)
-	menuList.AddItem("Create New Bookmark", "", 'b', u.ShowSaveToBookmarkModal)
+	menuList.AddItem("Save Bookmark", "", 'b', u.ShowSaveToBookmarkModal)
+	menuList.AddItem("History", "", 'h', u.ShowHistoryModal)
 	menuList.AddItem("Quit", "", 'q', u.QuitApplication)
 
 	// Handle keypress on menu list

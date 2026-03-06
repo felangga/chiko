@@ -14,6 +14,7 @@ import (
 func (u *UI) startupSequence() {
 	u.loadStartupUI()
 	u.loadBookmarks()
+	u.loadHistory()
 	u.startLogDumper()
 	u.startArgsConnection()
 	u.setupGlobalInputCapture()
@@ -72,11 +73,28 @@ func (u *UI) loadBookmarks() {
 	})
 }
 
-func (u *UI) RefreshBookmarkList() int16 {
-	u.Layout.BookmarkList.GetRoot().ClearChildren()
+// loadHistory loads the request history from file
+func (u *UI) loadHistory() {
+	if err := u.History.LoadHistory(); err != nil {
+		u.PrintLog(entity.Log{
+			Content: fmt.Sprintf("⚠️ could not load history: %v", err),
+			Type:    entity.LOG_ERROR,
+		})
+		return
+	}
 
-	// Populate bookmarks list
+	u.PrintLog(entity.Log{
+		Content: fmt.Sprintf("🕓 %d history entry(s) loaded", len(*u.History.Entries)),
+		Type:    entity.LOG_INFO,
+	})
+
+	u.RefreshHistoryPanel()
+}
+
+func (u *UI) RefreshBookmarkList() int16 {
 	var totalBookmarks int16
+	newChildren := []*tview.TreeNode{}
+
 	for _, b := range *u.Bookmark.Categories {
 		categoryNode := tview.NewTreeNode("📁 " + b.Name)
 		categoryNode.SetReference(b)
@@ -85,12 +103,18 @@ func (u *UI) RefreshBookmarkList() int16 {
 			sessionNode := tview.NewTreeNode("📗 " + session.Name)
 			sessionNode.SetReference(&session)
 			categoryNode.AddChild(sessionNode)
-
 			totalBookmarks++
 		}
-
-		u.Layout.BookmarkList.GetRoot().AddChild(categoryNode)
+		newChildren = append(newChildren, categoryNode)
 	}
+
+	go u.App.QueueUpdateDraw(func() {
+		root := u.Layout.BookmarkList.GetRoot()
+		root.ClearChildren()
+		for _, child := range newChildren {
+			root.AddChild(child)
+		}
+	})
 
 	return totalBookmarks
 }
@@ -114,6 +138,12 @@ func (u *UI) startLogDumper() {
 // Keys are suppressed when an InputField is focused to avoid interfering with text entry.
 func (u *UI) setupGlobalInputCapture() {
 	u.App.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		// Only fire global shortcuts when no modal windows are open.
+		// WindowCount == 1 means only the main app window exists.
+		if u.WinMan.WindowCount() > 1 {
+			return event
+		}
+
 		// Don't intercept shortcuts while the user is typing in an input field
 		if _, ok := u.App.GetFocus().(*tview.InputField); ok {
 			return event
@@ -132,6 +162,8 @@ func (u *UI) setupGlobalInputCapture() {
 			u.ShowRequestPayloadModal()
 		case 'i':
 			u.InvokeRPC()
+		case 'h':
+			u.ShowHistoryModal()
 		case 'b':
 			u.ShowSaveToBookmarkModal()
 		case 'q':

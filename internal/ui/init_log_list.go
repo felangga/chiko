@@ -14,9 +14,7 @@ func (u *UI) InitLogList() *tview.TextView {
 	logPanel.SetWordWrap(true)
 	logPanel.SetBorderPadding(1, 1, 1, 1)
 
-	logPanel.SetScrollable(true).SetChangedFunc(func() {
-		u.App.Draw()
-	})
+	logPanel.SetScrollable(true)
 
 	u.InitLogList_SetInputCapture(logPanel)
 
