@@ -12,7 +12,9 @@ jobs:
     steps:
       # Check out the code from the repository
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       # Set up Go environment
       - name: Set up Go

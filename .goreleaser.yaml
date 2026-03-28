@@ -4,6 +4,8 @@ project_name: chiko
 builds:
   - id: chiko
     main: cmd/chiko/main.go
+    ldflags:
+      - -s -w -X main.Version={{.Version}}
     goos:
       - linux
       - windows
