@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) PT Pintu Kemana Saja 2026 All Rights Reserved.
+ */
+
 package ui
 
 import (
@@ -110,7 +114,7 @@ func NewUI(session entity.Session) UI {
 func setupAppTitle() *tview.TextView {
 	title := tview.NewTextView()
 	title.SetBorder(true)
-	title.SetText(fmt.Sprintf("Chiko v%s", entity.APP_VERSION))
+	title.SetText(fmt.Sprintf("Chiko %s", entity.APP_VERSION))
 	title.SetTextAlign(tview.AlignCenter)
 
 	return title

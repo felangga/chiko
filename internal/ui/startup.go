@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) PT Pintu Kemana Saja 2026 All Rights Reserved.
+ */
+
 package ui
 
 import (
@@ -16,6 +20,7 @@ func (u *UI) startupSequence() {
 	u.loadBookmarks()
 	u.loadHistory()
 	u.startLogDumper()
+	go u.checkForUpdates()
 	u.startArgsConnection()
 	u.setupGlobalInputCapture()
 }
@@ -23,7 +28,7 @@ func (u *UI) startupSequence() {
 // loadStartupUI displays the welcome message and banner
 func (u *UI) loadStartupUI() {
 	u.PrintLog(entity.Log{
-		Content: fmt.Sprintf("✨ Welcome to Chiko v%s", entity.APP_VERSION),
+		Content: fmt.Sprintf("✨ Welcome to Chiko %s", entity.APP_VERSION),
 		Type:    entity.LOG_INFO,
 	})
 

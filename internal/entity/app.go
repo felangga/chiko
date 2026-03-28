@@ -1,3 +1,3 @@
 package entity
 
-const APP_VERSION = "0.1.4"
+var APP_VERSION = "dev"
