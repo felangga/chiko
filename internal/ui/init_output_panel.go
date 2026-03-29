@@ -157,13 +157,13 @@ func (u *UI) doWriteToFile(textarea *tview.TextArea) {
 			height: 1,
 		},
 		rootView:      txtPath,
-		fallbackFocus: u.Layout.MenuList,
+		fallbackFocus: u.activeSessionFocus(),
 	})
 
 	txtPath.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
 		case tcell.KeyEscape:
-			u.CloseModalDialog(wnd, u.Layout.MenuList)
+			u.CloseModalDialog(wnd, u.activeSessionFocus())
 		case tcell.KeyEnter:
 			if err := u.Storage.SaveToFile(txtPath.GetText(), []byte(textarea.GetText())); err != nil {
 				u.PrintLog(entity.Log{
@@ -173,7 +173,7 @@ func (u *UI) doWriteToFile(textarea *tview.TextArea) {
 				return nil
 			}
 			// Remove the window and restore focus to menu list
-			defer u.CloseModalDialog(wnd, u.Layout.MenuList)
+			defer u.CloseModalDialog(wnd, u.activeSessionFocus())
 			u.PrintLog(entity.Log{
 				Content: "✅ file saved successfully: " + txtPath.GetText(),
 				Type:    entity.LOG_INFO,
@@ -194,7 +194,7 @@ func (u *UI) doExportGrpcurlCommands() {
 				{
 					Name: "OK",
 					OnClick: func(wnd *winman.WindowBase) {
-						u.CloseModalDialog(wnd, u.Layout.MenuList)
+						u.CloseModalDialog(wnd, u.activeSessionFocus())
 					},
 				},
 			},
@@ -216,7 +216,7 @@ func (u *UI) doExportGrpcurlCommands() {
 						})
 						return
 					}
-					u.CloseModalDialog(wnd, u.Layout.MenuList)
+					u.CloseModalDialog(wnd, u.activeSessionFocus())
 				},
 			},
 		},

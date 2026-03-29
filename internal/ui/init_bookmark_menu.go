@@ -28,7 +28,7 @@ func (u *UI) InitBookmarkMenu_SetInputCapture(bookmarkList *tview.TreeView) {
 	bookmarkList.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
 		case tcell.KeyTAB:
-			u.SetFocus(u.Layout.OutputPanel.Layout)
+			u.SetFocus(u.ActiveSession.OutputPanel.Layout)
 			return nil
 		case tcell.KeyDelete:
 			// Delete key directly shows the delete confirmation for the focused node

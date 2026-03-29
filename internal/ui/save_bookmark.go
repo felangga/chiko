@@ -64,7 +64,7 @@ func (u *UI) ShowBookmarkNameModal(parentWND winman.Window, onEnter func(bookmar
 			onEnter(bookmarkName.GetText())
 
 			// Remove the window and restore focus to menu list
-			u.CloseModalDialog(wnd, u.Layout.MenuList)
+			u.CloseModalDialog(wnd, u.activeSessionFocus())
 		}
 		return event
 	})
@@ -81,7 +81,7 @@ func (u *UI) ShowBookmarkCategoryModal(onSelectedCategory func(wnd winman.Window
 		rootView:      list,
 		draggable:     true,
 		size:          winSize{0, 0, 50, 10},
-		fallbackFocus: u.Layout.MenuList,
+		fallbackFocus: u.activeSessionFocus(),
 	})
 
 	wnd.SetBorderPadding(1, 1, 1, 1)
@@ -106,7 +106,7 @@ func (u *UI) ShowBookmarkCategoryModal_SetInputCapture(wnd *winman.WindowBase, l
 	list.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
 		case tcell.KeyEscape:
-			u.CloseModalDialog(wnd, u.Layout.MenuList)
+			u.CloseModalDialog(wnd, u.activeSessionFocus())
 		}
 		return event
 	})

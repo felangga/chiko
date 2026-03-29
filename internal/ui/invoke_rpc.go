@@ -8,19 +8,21 @@ import (
 
 func (u *UI) InvokeRPC() {
 	// Check if any method is selected
-	if u.GRPC.Conn.SelectedMethod == nil {
-		u.PrintLog(entity.Log{
-			Content: "❗ no method selected",
-			Type:    entity.LOG_ERROR,
+	if u.ActiveSession.GRPC.Conn.SelectedMethod == nil {
+		u.PrintOutput(entity.Output{
+			SessionID:  u.ActiveSession.ID,
+			Content:    "❗ no method selected. Please connect and select a method first.",
+			WithHeader: true,
 		})
 		return
 	}
 
 	// Check if there is no active connection
-	if u.GRPC.Conn.ActiveConnection == nil {
-		u.PrintLog(entity.Log{
-			Content: "❗ no active connection",
-			Type:    entity.LOG_ERROR,
+	if u.ActiveSession.GRPC.Conn.ActiveConnection == nil {
+		u.PrintOutput(entity.Output{
+			SessionID:  u.ActiveSession.ID,
+			Content:    "❗ no active connection. Please enter a URL and press Enter to connect.",
+			WithHeader: true,
 		})
 		return
 	}
@@ -29,6 +31,7 @@ func (u *UI) InvokeRPC() {
 	err := u.GRPC.InvokeRPC()
 	if err != nil {
 		u.PrintOutput(entity.Output{
+			SessionID:  u.GRPC.Conn.ID,
 			Content:    err.Error(),
 			WithHeader: true,
 		})

@@ -42,7 +42,7 @@ func (u *UI) loadStartupUI() {
 
 // startArgsConnection handle the connection request from command line arguments
 func (u *UI) startArgsConnection() {
-	if u.GRPC.Conn.ID == uuid.Nil {
+	if u.GRPC == nil || u.GRPC.Conn.ID == uuid.Nil {
 		return
 	}
 
@@ -144,13 +144,45 @@ func (u *UI) startLogDumper() {
 func (u *UI) setupGlobalInputCapture() {
 	u.App.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		// Only fire global shortcuts when no modal windows are open.
-		// WindowCount == 1 means only the main app window exists.
-		if u.WinMan.WindowCount() > 1 {
+		// Modal windows are any windows that exceed our known Dashboard (1) + Sessions
+		if u.WinMan.WindowCount() > len(u.Sessions)+1 {
 			return event
 		}
 
-		// Don't intercept shortcuts while the user is typing in an input field
-		if _, ok := u.App.GetFocus().(*tview.InputField); ok {
+		switch event.Key() {
+		case tcell.KeyCtrlN:
+			u.CreateSessionWindow(nil)
+			return nil
+		case tcell.KeyCtrlW:
+			if u.ActiveSession != nil {
+				u.CloseSession(u.ActiveSession)
+			}
+			return nil
+		case tcell.KeyCtrlL: // next tab
+			u.FocusNextSession()
+			return nil
+		case tcell.KeyCtrlH: // prev tab
+			u.FocusPrevSession()
+			return nil
+		case tcell.KeyTab: // cycle forward
+			if u.ActiveSession != nil {
+				// Don't intercept tabs natively when inside the payload body JSON editor
+				if u.App.GetFocus() != u.ActiveSession.RequestBodyArea {
+					u.ActiveSession.CycleFocus(u, 1)
+					return nil
+				}
+			}
+		case tcell.KeyBacktab: // cycle backward
+			if u.ActiveSession != nil {
+				u.ActiveSession.CycleFocus(u, -1)
+				return nil
+			}
+		}
+
+		// Don't intercept single-key shortcuts while the user is typing in an input field or text area
+		_, isInput := u.App.GetFocus().(*tview.InputField)
+		_, isTextArea := u.App.GetFocus().(*tview.TextArea)
+		if isInput || isTextArea {
 			return event
 		}
 
@@ -158,13 +190,25 @@ func (u *UI) setupGlobalInputCapture() {
 		case 'u':
 			u.ShowSetServerURLModal()
 		case 'm':
-			u.ShowSetRequestMethodModal()
+			if u.ActiveSession != nil && u.ActiveSession.MethodField != nil {
+				u.SetFocus(u.ActiveSession.MethodField)
+			}
 		case 'a':
-			u.ShowAuthorizationModal()
+			if u.ActiveSession != nil && u.ActiveSession.AuthInput != nil {
+				u.ActiveSession.RequestPages.SwitchToPage(reqPanelAuth)
+				u.ActiveSession.RefreshRequestTabs(reqPanelAuth)
+				u.SetFocus(u.ActiveSession.AuthInput)
+			}
 		case 'd':
-			u.ShowMetadataModal()
+			if u.ActiveSession != nil && u.ActiveSession.MetadataArea != nil {
+				u.ActiveSession.RequestPages.SwitchToPage(reqPanelMetadata)
+				u.ActiveSession.RefreshRequestTabs(reqPanelMetadata)
+				u.SetFocus(u.ActiveSession.MetadataArea)
+			}
 		case 'p':
-			u.ShowRequestPayloadModal()
+			if u.ActiveSession != nil && u.ActiveSession.RequestBodyArea != nil {
+				u.SetFocus(u.ActiveSession.RequestBodyArea)
+			}
 		case 'i':
 			u.InvokeRPC()
 		case 'h':

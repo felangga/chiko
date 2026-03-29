@@ -36,7 +36,7 @@ func (u *UI) ShowHistoryModal() {
 		draggable:     true,
 		resizeable:    true,
 		size:          winSize{0, 0, 80, 25},
-		fallbackFocus: u.Layout.MenuList,
+		fallbackFocus: u.activeSessionFocus(),
 	})
 	wnd.SetBorderPadding(1, 0, 1, 1)
 
@@ -49,7 +49,7 @@ func (u *UI) ShowHistoryModal() {
 	searchBox.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
 		case tcell.KeyEscape:
-			u.CloseModalDialog(wnd, u.Layout.MenuList)
+			u.CloseModalDialog(wnd, u.activeSessionFocus())
 			return nil
 		case tcell.KeyTAB, tcell.KeyDown:
 			u.App.SetFocus(u.Layout.HistoryPanel)
@@ -62,7 +62,7 @@ func (u *UI) ShowHistoryModal() {
 	u.Layout.HistoryPanel.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
 		case tcell.KeyEscape:
-			u.CloseModalDialog(wnd, u.Layout.MenuList)
+			u.CloseModalDialog(wnd, u.activeSessionFocus())
 			return nil
 		case tcell.KeyTAB:
 			// Move up to search box when at the top of the tree

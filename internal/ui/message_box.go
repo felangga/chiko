@@ -37,7 +37,7 @@ func (u *UI) ShowMessageBox(param ShowMessageBoxParam) {
 		draggable:     true,
 		resizeable:    false,
 		size:          winSize{0, 0, 50, 11},
-		fallbackFocus: u.Layout.MenuList,
+		fallbackFocus: u.activeSessionFocus(),
 	})
 
 	u.ShowMessageBox_SetComponentActions(wnd, form, param.buttons)
@@ -60,7 +60,7 @@ func (u *UI) ShowMessageBox_SetInputCapture(wnd *winman.WindowBase, parent *tvie
 	parent.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
 		case tcell.KeyEscape:
-			u.CloseModalDialog(wnd, u.Layout.MenuList)
+			u.CloseModalDialog(wnd, u.activeSessionFocus())
 		}
 		return event
 	})

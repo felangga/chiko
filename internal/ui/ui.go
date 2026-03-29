@@ -5,8 +5,9 @@
 package ui
 
 import (
-	"fmt"
 	"sync"
+
+	"github.com/google/uuid"
 
 	"github.com/epiclabs-io/winman"
 	"github.com/gdamore/tcell/v2"
@@ -21,11 +22,30 @@ import (
 )
 
 type ComponentLayout struct {
-	MenuList     *tview.List
 	BookmarkList *tview.TreeView
 	LogList      *tview.TextView
-	OutputPanel  InitOutputPanelComponents
 	HistoryPanel *tview.TreeView
+}
+
+// SessionWindow represents a discrete, floating or maximized winman.Window containing a Request context
+type SessionWindow struct {
+	ID          uuid.UUID
+	GRPC        *grpc.GRPC
+	WinBase     *winman.WindowBase
+	MenuList    *tview.List // kept for modal fallback focus target
+	OutputPanel InitOutputPanelComponents
+
+	// Postman-style inline UI components
+	URLField        *tview.InputField
+	MethodField     *tview.InputField
+	SendBtn         *tview.Button
+	RequestBodyArea *tview.TextArea
+	AuthInput       *tview.InputField
+	MetadataArea    *tview.TextArea
+	RequestPages   *tview.Pages
+	RequestTabBar  *tview.TextView
+	RefreshTopBar  func()
+	RefreshRequestTabs func(string)
 }
 
 type UI struct {
@@ -33,6 +53,10 @@ type UI struct {
 	WinMan *winman.Manager
 	Layout *ComponentLayout
 
+	Sessions       []*SessionWindow
+	ActiveSession  *SessionWindow
+
+	Logger        *logger.Logger
 	GRPC          *grpc.GRPC
 	Bookmark      *bookmark.Bookmark
 	History       *history.History
@@ -41,12 +65,29 @@ type UI struct {
 	OutputChannel chan entity.Output
 
 	Theme *entity.Theme
+
+	// Dashboard window reference for Z-index manipulation
+	HomeWindow *winman.WindowBase
 }
 
 func (u *UI) SetFocus(p tview.Primitive) {
 	go u.App.QueueUpdateDraw(func() {
 		u.App.SetFocus(p)
 	})
+}
+
+// activeSessionFocus returns the best focus target for the current session window.
+// In the Postman-style layout the URLField is the primary interactive element.
+func (u *UI) activeSessionFocus() tview.Primitive {
+	if u.ActiveSession != nil {
+		if u.ActiveSession.URLField != nil {
+			return u.ActiveSession.URLField
+		}
+		if u.ActiveSession.MenuList != nil {
+			return u.ActiveSession.MenuList
+		}
+	}
+	return u.Layout.LogList
 }
 
 func (u UI) Run() error {
@@ -63,7 +104,6 @@ func NewUI(session entity.Session) UI {
 
 	app := tview.NewApplication()
 	wm := winman.NewWindowManager()
-	grpc := grpc.NewGRPC(logger, &session)
 	bookmark := bookmark.NewBookmark()
 	history := history.NewHistory()
 	storage := storage.NewStorage()
@@ -71,7 +111,7 @@ func NewUI(session entity.Session) UI {
 	instance := &UI{
 		App:           app,
 		WinMan:        wm,
-		GRPC:          &grpc,
+		Logger:        logger,
 		Bookmark:      &bookmark,
 		History:       &history,
 		Storage:       &storage,
@@ -81,19 +121,29 @@ func NewUI(session entity.Session) UI {
 	}
 
 	instance.Layout = &ComponentLayout{
-		MenuList:     instance.InitSidebarMenu(),
 		BookmarkList: instance.InitBookmarkMenu(),
 		LogList:      instance.InitLogList(),
-		OutputPanel:  instance.InitOutputPanel(),
 		HistoryPanel: instance.InitHistoryPanel(),
 	}
 
-	// Background window (lowest Z) — containing the main app layout
+	// Create the Floating Home Dashboard Window
+	homeMenuLayout := instance.InitHomeMenu()
 	bgWindow := wm.NewWindow().
 		Show().
-		SetRoot(instance.setupAppLayout()).
-		SetBorder(false)
-	bgWindow.Maximize()
+		SetRoot(homeMenuLayout).
+		SetBorder(true).
+		SetDraggable(true).
+		SetResizable(true).
+		SetTitle(" 🚀 Chiko Dashboard ")
+	
+	// Default starting size for the main menu
+	bgWindow.SetRect(2, 2, 60, 20)
+	instance.HomeWindow = bgWindow
+
+	// If the user launched Chiko with CLI arguments, start an RPC session automatically
+	if session.ID != uuid.Nil {
+		instance.CreateSessionWindow(&session)
+	}
 
 	app.SetRoot(wm, true)
 
@@ -110,32 +160,4 @@ func NewUI(session entity.Session) UI {
 	return *instance
 }
 
-// setupAppTitle sets up the header title of the application.
-func setupAppTitle() *tview.TextView {
-	title := tview.NewTextView()
-	title.SetBorder(true)
-	title.SetText(fmt.Sprintf("Chiko %s", entity.APP_VERSION))
-	title.SetTextAlign(tview.AlignCenter)
 
-	return title
-}
-
-func (u *UI) setupAppLayout() *tview.Flex {
-	sidebar := tview.NewFlex().SetDirection(tview.FlexRow).
-		AddItem(u.Layout.MenuList, 0, 1, true).
-		AddItem(u.Layout.BookmarkList, 0, 1, false)
-
-	mainContent := tview.NewFlex().SetDirection(tview.FlexRow).
-		AddItem(u.Layout.OutputPanel.Layout, 0, 3, true).
-		AddItem(u.Layout.LogList, 10, 1, false)
-
-	content := tview.NewFlex().SetDirection(tview.FlexColumn).
-		AddItem(sidebar, 35, 1, true).
-		AddItem(mainContent, 0, 1, false)
-
-	layout := tview.NewFlex().SetDirection(tview.FlexRow).
-		AddItem(setupAppTitle(), 3, 1, false).
-		AddItem(content, 0, 1, true)
-
-	return layout
-}

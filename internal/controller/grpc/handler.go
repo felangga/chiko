@@ -48,6 +48,7 @@ func (h *handler) OnReceiveResponse(msg proto.Message) {
 	h.respMessages = append(h.respMessages, respStr)
 	output := fmt.Sprintf("\n%s\n\n%s\n\n%s", statusCode, headerResp, respStr)
 	out := entity.Output{
+		SessionID:  h.grpc.Conn.ID,
 		Content:    output,
 		WithHeader: true,
 	}

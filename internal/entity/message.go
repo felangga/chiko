@@ -1,5 +1,7 @@
 package entity
 
+import "github.com/google/uuid"
+
 type LogType int8
 
 const (
@@ -14,6 +16,7 @@ type Log struct {
 }
 
 type Output struct {
+	SessionID   uuid.UUID
 	Content     string
 	WithHeader  bool
 	CursorAtEnd bool

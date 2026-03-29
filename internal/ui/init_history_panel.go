@@ -33,7 +33,7 @@ func (u *UI) InitHistoryPanel_SetInputCapture(historyPanel *tview.TreeView) {
 	historyPanel.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
 		case tcell.KeyTAB:
-			u.SetFocus(u.Layout.MenuList)
+			u.SetFocus(u.activeSessionFocus())
 			return nil
 		}
 		return event

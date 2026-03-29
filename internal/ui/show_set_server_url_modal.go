@@ -1,6 +1,8 @@
 package ui
 
 import (
+	"fmt"
+	
 	"github.com/epiclabs-io/winman"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -39,7 +41,7 @@ func (u *UI) ShowSetServerURLModal() {
 		rootView:      layout,
 		draggable:     true,
 		size:          winSize{0, 0, 70, 7},
-		fallbackFocus: u.Layout.MenuList,
+		fallbackFocus: u.activeSessionFocus(),
 	})
 
 	u.ShowSetServerURLModal_SetInputCapture(wnd)
@@ -52,7 +54,7 @@ func (u *UI) ShowSetServerURLModal_SetInputCapture(wnd *winman.WindowBase) {
 		switch event.Key() {
 		case tcell.KeyEscape:
 			u.WinMan.RemoveWindow(wnd)
-			u.SetFocus(u.Layout.MenuList)
+			u.SetFocus(u.activeSessionFocus())
 			return nil
 
 		case tcell.KeyEnter:
@@ -120,6 +122,37 @@ func (u *UI) doConnect(wnd *winman.WindowBase) {
 		}
 
 		// Remove the window and restore focus to menu list
-		u.CloseModalDialog(wnd, u.Layout.MenuList)
+		u.CloseModalDialog(wnd, u.activeSessionFocus())
 	}()
 }
+
+// connectSession connects using the inline URL field — no modal required.
+// Safe to call from the top bar Enter handler with no open modal.
+func (u *UI) connectSession(sw *SessionWindow, urlField *tview.InputField) {
+	u.GRPC = sw.GRPC
+	u.ActiveSession = sw
+	serverURL := urlField.GetText()
+
+	u.PrintOutput(entity.Output{
+		SessionID:  sw.ID,
+		Content:    "🌏 connecting to " + serverURL + "...",
+		WithHeader: true,
+	})
+
+	sw.GRPC.Conn.ServerURL = serverURL
+	if err := sw.GRPC.Connect(); err != nil {
+		u.PrintOutput(entity.Output{
+			SessionID:  sw.ID,
+			Content:    "❌ failed to connect: " + err.Error(),
+			WithHeader: false,
+		})
+		return
+	}
+
+	u.PrintOutput(entity.Output{
+		SessionID:  sw.ID,
+		Content:    fmt.Sprintf("✅ connected to %s\nDiscovered %d methods", serverURL, len(sw.GRPC.Conn.AvailableMethods)),
+		WithHeader: false,
+	})
+}
+
