@@ -2,7 +2,7 @@
 
 # Project variables
 BINARY_NAME=chiko
-VERSION=$(shell git describe --tags --always --dirty)
+VERSION=$(shell git describe --tags --abbrev=0 2>/dev/null || echo "dev")
 BUILD_DIR=build
 CMD_DIR=cmd/chiko
 INSTALL_DIR=/usr/local/bin
