@@ -34,6 +34,7 @@ func (u *UI) initSessionRequestPanel(sw *SessionWindow) (*tview.Pages, *tview.Te
 	bodyArea.SetMovedFunc(func() {
 		// Sync text back to GRPC connection as user types
 		sw.GRPC.Conn.RequestPayload = bodyArea.GetText()
+		u.SaveWorkspace()
 	})
 	bodyArea.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyCtrlG {
@@ -68,7 +69,6 @@ func (u *UI) initSessionRequestPanel(sw *SessionWindow) (*tview.Pages, *tview.Te
 
 	pages.AddPage(reqPanelBody, bodyWrapper, true, true)
 
-	// ── Metadata Panel (Inline K/V Text Area) ──────────────────────────
 	metaArea := tview.NewTextArea()
 	metaText := ""
 	if sw.GRPC.Conn != nil && len(sw.GRPC.Conn.Metadata) > 0 {
@@ -87,7 +87,7 @@ func (u *UI) initSessionRequestPanel(sw *SessionWindow) (*tview.Pages, *tview.Te
 	metaArea.SetBorder(false)
 	metaArea.SetTextStyle(tcell.StyleDefault.Foreground(tcell.ColorLightCyan))
 	metaArea.SetFocusFunc(focusHook)
-	
+
 	metaArea.SetMovedFunc(func() {
 		// Sync metadata back instantly as the user types
 		text := metaArea.GetText()
@@ -114,13 +114,13 @@ func (u *UI) initSessionRequestPanel(sw *SessionWindow) (*tview.Pages, *tview.Te
 			}
 		}
 		sw.GRPC.Conn.Metadata = parsed
+		u.SaveWorkspace()
 	})
 
 	metaWrapper := tview.NewFlex().SetDirection(tview.FlexRow).AddItem(metaArea, 0, 1, true)
 	metaWrapper.SetBorder(true).SetTitle(" Metadata (Key: Value) ")
 	pages.AddPage(reqPanelMetadata, metaWrapper, true, false)
 
-	// ── Auth Panel (Inline Bearer Token) ─────────────────────────────
 	authInput := tview.NewInputField()
 	authInput.SetLabel(" Bearer Token: ")
 	if sw.GRPC.Conn != nil && sw.GRPC.Conn.Authorization != nil && sw.GRPC.Conn.Authorization.BearerToken != nil {
@@ -140,6 +140,7 @@ func (u *UI) initSessionRequestPanel(sw *SessionWindow) (*tview.Pages, *tview.Te
 				},
 			}
 		}
+		u.SaveWorkspace()
 	})
 
 	authWrapper := tview.NewFlex().SetDirection(tview.FlexRow).
@@ -183,7 +184,6 @@ func (u *UI) initSessionRequestPanel(sw *SessionWindow) (*tview.Pages, *tview.Te
 				tabBar.Write([]byte(`["` + t.id + `"][darkgray:black]` + t.label + `[""] `))
 			}
 		}
-		tabBar.Write([]byte(`  [darkgray]( [lightgray]B[darkgray]ody  [lightgray]^M[darkgray]eta  [lightgray]^A[darkgray]uth )`))
 	}
 
 	renderTabs(reqPanelBody)

@@ -21,6 +21,7 @@ func (u *UI) startupSequence() {
 	u.loadHistory()
 	u.startLogDumper()
 	go u.checkForUpdates()
+	u.loadWorkspace()
 	u.startArgsConnection()
 	u.setupGlobalInputCapture()
 }
@@ -94,6 +95,41 @@ func (u *UI) loadHistory() {
 	})
 
 	u.RefreshHistoryPanel()
+}
+
+// loadWorkspace restores previous session windows
+func (u *UI) loadWorkspace() {
+	ws, err := u.Workspace.LoadWorkspace()
+	if err != nil {
+		u.PrintLog(entity.Log{
+			Content: fmt.Sprintf("⚠️ could not load workspace: %v", err),
+			Type:    entity.LOG_ERROR,
+		})
+		return
+	}
+
+	if ws == nil || len(ws.ActiveSessions) == 0 {
+		return
+	}
+
+	u.PrintLog(entity.Log{
+		Content: fmt.Sprintf("📂 restoring %d session(s) from previous workspace", len(ws.ActiveSessions)),
+		Type:    entity.LOG_INFO,
+	})
+
+	var activeSession *SessionWindow
+	for _, session := range ws.ActiveSessions {
+		u.CreateSessionWindow(session)
+		if session.ID == ws.ActiveSessionID {
+			activeSession = u.Sessions[len(u.Sessions)-1]
+		}
+	}
+
+	if activeSession != nil {
+		u.ActiveSession = activeSession
+		u.GRPC = activeSession.GRPC
+		u.SetFocus(u.activeSessionFocus())
+	}
 }
 
 func (u *UI) RefreshBookmarkList() int16 {

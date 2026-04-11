@@ -2,6 +2,7 @@ package ui
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -44,16 +45,47 @@ func (u *UI) initSessionTopBar(sw *SessionWindow) *tview.Flex {
 			lastConnectedURL = currentURL
 			go u.connectSession(sw, urlField)
 		}
+		u.SaveWorkspace()
 	})
 
-	urlField.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		if event.Key() == tcell.KeyEnter {
+	urlField.SetAutocompleteFunc(func(currentText string) (entries []string) {
+		if u.History == nil || u.History.Entries == nil {
+			return nil
+		}
+
+		// Collect unique URLs from history
+		uniqueURLs := make(map[string]struct{})
+		u.History.Mu.RLock()
+		for _, entry := range *u.History.Entries {
+			if entry.Session.ServerURL != "" {
+				uniqueURLs[entry.Session.ServerURL] = struct{}{}
+			}
+		}
+		u.History.Mu.RUnlock()
+
+		if currentText == "" {
+			for url := range uniqueURLs {
+				entries = append(entries, url)
+			}
+			return entries
+		}
+
+		lowerCurrent := strings.ToLower(currentText)
+		for url := range uniqueURLs {
+			if strings.Contains(strings.ToLower(url), lowerCurrent) {
+				entries = append(entries, url)
+			}
+		}
+		return entries
+	})
+
+	urlField.SetDoneFunc(func(key tcell.Key) {
+		if key == tcell.KeyEnter {
 			currentURL := urlField.GetText()
 			lastConnectedURL = currentURL
 			go u.connectSession(sw, urlField)
-			return nil
 		}
-		return event
+		u.SaveWorkspace()
 	})
 	sw.URLField = urlField
 
@@ -154,7 +186,7 @@ func (u *UI) initSessionTopBar(sw *SessionWindow) *tview.Flex {
 	// Row 1: URL | SEND
 	row1 := tview.NewFlex().SetDirection(tview.FlexColumn).
 		AddItem(urlField, 0, 1, true).
-		AddItem(sendBtn, 12, 0, false)
+		AddItem(sendBtn, 18, 0, false)
 
 	// Row 2: Method
 	bar := tview.NewFlex().SetDirection(tview.FlexRow).

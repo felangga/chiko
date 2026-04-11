@@ -12,10 +12,19 @@ import (
 	"github.com/felangga/chiko/internal/entity"
 )
 
+const (
+	outPanelResponse = "response"
+	outPanelHeaders  = "headers"
+)
+
 type InitOutputPanelComponents struct {
-	Layout   *tview.Flex
-	TextArea *tview.TextArea
-	Buffer   string
+	Layout         *tview.Flex
+	TextArea       *tview.TextArea // Response Payload
+	HeaderArea     *tview.TextArea // Response Headers
+	ResponsePages  *tview.Pages
+	ResponseTabBar *tview.TextView
+	RefreshTabs    func(string)
+	Buffer         string
 }
 
 var (
@@ -24,25 +33,86 @@ var (
 
 // InitOutputPanel initializes the output panel on the main screen
 func (u *UI) InitOutputPanel() InitOutputPanelComponents {
+	pages := tview.NewPages()
+
 	output := tview.NewTextArea()
 	output.SetWrap(false)
-	output.SetMaxLength(1)
-	output.SetTextStyle(tcell.StyleDefault.
-		Foreground(tcell.ColorGreen))
 
+	output.SetTextStyle(tcell.StyleDefault.Foreground(tcell.ColorGreen))
 	u.initOutputPanel_handleTextArea(output)
+
+	pages.AddPage(outPanelResponse, output, true, true)
+
+	headerArea := tview.NewTextArea()
+	headerArea.SetWrap(false)
+	headerArea.SetTextStyle(tcell.StyleDefault.Foreground(tcell.ColorLightCyan))
+	u.initOutputPanel_handleTextArea(headerArea)
+
+	pages.AddPage(outPanelHeaders, headerArea, true, false)
+
+	tabBar := tview.NewTextView()
+	tabBar.SetDynamicColors(true)
+	tabBar.SetRegions(true)
+	tabBar.SetWrap(false)
+	tabBar.SetBackgroundColor(tcell.ColorDarkSlateGray)
+
+	renderTabs := func(active string) {
+		tabBar.Clear()
+		tabs := []struct {
+			id    string
+			label string
+		}{
+			{outPanelResponse, " Response "},
+			{outPanelHeaders, " Headers "},
+		}
+		for _, t := range tabs {
+			if t.id == active {
+				tabBar.Write([]byte(`["` + t.id + `"][white:darkblue::b]` + t.label + `[""] `))
+			} else {
+				tabBar.Write([]byte(`["` + t.id + `"][darkgray:black]` + t.label + `[""] `))
+			}
+		}
+	}
+
+	renderTabs(outPanelResponse)
+
+	tabBar.SetHighlightedFunc(func(added, removed, remaining []string) {
+		if len(added) == 0 {
+			return
+		}
+		tab := added[0]
+		pages.SwitchToPage(tab)
+		renderTabs(tab)
+	})
+
+	tabBar.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		switch {
+		case event.Key() == tcell.KeyRune && event.Rune() == 'r':
+			tabBar.Highlight(outPanelResponse)
+		case event.Key() == tcell.KeyRune && event.Rune() == 'h':
+			tabBar.Highlight(outPanelHeaders)
+		case event.Key() == tcell.KeyTAB:
+			u.SetFocus(output)
+		}
+		return event
+	})
 
 	layout := tview.NewFlex()
 	layout.SetDirection(tview.FlexRow)
 	layout.SetBorder(true)
 	layout.SetTitle(" Output ")
-	layout.AddItem(output, 0, 1, true)
+	layout.AddItem(tabBar, 1, 0, false)
+	layout.AddItem(pages, 0, 1, true)
 	layout.AddItem(u.initOutputPanel_PanelBar(), 1, 1, false)
 
 	return InitOutputPanelComponents{
-		Layout:   layout,
-		TextArea: output,
-		Buffer:   "",
+		Layout:         layout,
+		TextArea:       output,
+		HeaderArea:     headerArea,
+		ResponsePages:  pages,
+		ResponseTabBar: tabBar,
+		RefreshTabs:    renderTabs,
+		Buffer:         "",
 	}
 }
 

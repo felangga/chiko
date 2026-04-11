@@ -16,8 +16,11 @@ type Log struct {
 }
 
 type Output struct {
-	SessionID   uuid.UUID
-	Content     string
-	WithHeader  bool
-	CursorAtEnd bool
+	SessionID       uuid.UUID
+	Content         string // Legacy / Combined
+	ResponsePayload string
+	ResponseHeaders string
+	ResponseStatus  string
+	WithHeader      bool
+	CursorAtEnd     bool
 }

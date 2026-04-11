@@ -30,6 +30,13 @@ type Session struct {
 	ConnectTimeout float64 `json:"connect_timeout"`
 	MaxTimeOut     float64 `json:"max_timeout"`
 	KeepAliveTime  float64 `json:"keepalive_time"`
+
+	// Window Geometry (Workspace persistence)
+	X         int  `json:"x"`
+	Y         int  `json:"y"`
+	W         int  `json:"w"`
+	H         int  `json:"h"`
+	Maximized bool `json:"maximized"`
 }
 
 // ParseMetadata used to convert the metadata and authorization parameters to array of strings

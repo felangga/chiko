@@ -17,6 +17,7 @@ import (
 	"github.com/felangga/chiko/internal/controller/grpc"
 	"github.com/felangga/chiko/internal/controller/history"
 	"github.com/felangga/chiko/internal/controller/storage"
+	"github.com/felangga/chiko/internal/controller/workspace"
 	"github.com/felangga/chiko/internal/entity"
 	"github.com/felangga/chiko/internal/logger"
 )
@@ -42,10 +43,12 @@ type SessionWindow struct {
 	RequestBodyArea *tview.TextArea
 	AuthInput       *tview.InputField
 	MetadataArea    *tview.TextArea
-	RequestPages   *tview.Pages
-	RequestTabBar  *tview.TextView
-	RefreshTopBar  func()
+	RequestPages       *tview.Pages
+	RequestTabBar      *tview.TextView
+	RefreshTopBar      func()
 	RefreshRequestTabs func(string)
+	RefreshResponseTabs func(string)
+	Loading             bool
 }
 
 type UI struct {
@@ -60,6 +63,7 @@ type UI struct {
 	GRPC          *grpc.GRPC
 	Bookmark      *bookmark.Bookmark
 	History       *history.History
+	Workspace     *workspace.Workspace
 	Storage       *storage.Storage
 	LogChannel    chan entity.Log
 	OutputChannel chan entity.Output
@@ -106,6 +110,7 @@ func NewUI(session entity.Session) UI {
 	wm := winman.NewWindowManager()
 	bookmark := bookmark.NewBookmark()
 	history := history.NewHistory()
+	workspace := workspace.NewWorkspace()
 	storage := storage.NewStorage()
 
 	instance := &UI{
@@ -114,6 +119,7 @@ func NewUI(session entity.Session) UI {
 		Logger:        logger,
 		Bookmark:      &bookmark,
 		History:       &history,
+		Workspace:     &workspace,
 		Storage:       &storage,
 		LogChannel:    logger.LogChannel(),
 		OutputChannel: logger.OutputChannel(),
@@ -158,6 +164,63 @@ func NewUI(session entity.Session) UI {
 	})
 
 	return *instance
+}
+
+func (u *UI) SaveWorkspace() {
+	if u.Workspace == nil {
+		return
+	}
+
+	var activeID uuid.UUID
+	if u.ActiveSession != nil {
+		activeID = u.ActiveSession.ID
+	}
+
+	sessions := make([]*entity.Session, 0, len(u.Sessions))
+	for _, sw := range u.Sessions {
+		// Only save if it has a URL or is meaningful? 
+		// Actually the user wants "the same window will load up", so we save all.
+		// We should sync the current fields back to the session object
+		s := sw.GRPC.Conn
+		if sw.URLField != nil {
+			s.ServerURL = sw.URLField.GetText()
+		}
+		if sw.RequestBodyArea != nil {
+			s.RequestPayload = sw.RequestBodyArea.GetText()
+		}
+		
+		// Capture window geometry
+		if sw.WinBase != nil {
+			s.X, s.Y, s.W, s.H = sw.WinBase.GetRect()
+			s.Maximized = sw.WinBase.IsMaximized()
+		}
+
+		// Metadata and Auth are already synced via ChangedFunc if implemented correctly
+		sessions = append(sessions, s)
+	}
+
+	ws := entity.Workspace{
+		ActiveSessions:  sessions,
+		ActiveSessionID: activeID,
+	}
+
+	if err := u.Workspace.SaveWorkspace(ws); err != nil {
+		u.PrintLog(entity.Log{
+			Content: "❌ failed to save workspace: " + err.Error(),
+			Type:    entity.LOG_ERROR,
+		})
+	}
+}
+
+func (u *UI) SetLoading(sw *SessionWindow, loading bool) {
+	sw.Loading = loading
+	go u.App.QueueUpdateDraw(func() {
+		if sw.Loading {
+			sw.SendBtn.SetLabel("  [yellow]⏳ SENDING...  ")
+		} else {
+			sw.SendBtn.SetLabel("  ▶ SEND  ")
+		}
+	})
 }
 
 
