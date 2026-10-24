@@ -24,7 +24,13 @@ func (e *EventManager) Listen(to EventType, callback IEventHandler) {
 }
 
 func (e *EventManager) Emit(event IEvent) {
-	e.queue <- event
+	// Drop events rather than blocking the caller when the queue is full.
+	// The drainer goroutine processes events as fast as it can; blocking
+	// the UI thread on a full channel freezes the terminal.
+	select {
+	case e.queue <- event:
+	default:
+	}
 }
 
 func (e *EventManager) listenersFor(eventType EventType) []IEventHandler {
