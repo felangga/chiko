@@ -1,10 +1,6 @@
 package entity
 
-import (
-	"github.com/fullstorydev/grpcurl"
-	"github.com/google/uuid"
-	"google.golang.org/grpc"
-)
+import "github.com/fullstorydev/grpcurl"
 
 type Session struct {
 	ID                 uuid.UUID                `json:"id"`
