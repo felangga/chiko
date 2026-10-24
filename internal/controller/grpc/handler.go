@@ -29,30 +29,13 @@ type handler struct {
 }
 
 func (h *handler) OnReceiveResponse(msg proto.Message) {
-	// Print headers to log window
-	headerResp := "  Headers:"
-	for key, values := range h.respHeaders {
-		headerResp += fmt.Sprintf("\n    ► %s: %s", key, strings.Join(values, ","))
-	}
-
-	statusCode := fmt.Sprintf("  Status Code: %d %s", h.respStatus.Code(), h.respStatus.Message())
-
-	// Print the gRPC response
 	jsm := jsonpb.Marshaler{Indent: "  "}
 	respStr, err := jsm.MarshalToString(msg)
 	if err != nil {
 		h.grpc.Logger.Error(fmt.Sprintf("failed to generate JSON form of response message: %v", err))
 		return
 	}
-
 	h.respMessages = append(h.respMessages, respStr)
-	output := fmt.Sprintf("\n%s\n\n%s\n\n%s", statusCode, headerResp, respStr)
-	out := entity.Output{
-		Content:    output,
-		WithHeader: true,
-	}
-
-	h.grpc.Logger.PrintOutput(out)
 }
 
 func (h *handler) OnResolveMethod(md *desc.MethodDescriptor) {
@@ -74,4 +57,22 @@ func (h *handler) OnReceiveTrailers(stat *status.Status, md metadata.MD) {
 	h.respTrailersCount++
 	h.respTrailers = md
 	h.respStatus = stat
+
+	// Format and print all buffered responses with the final status.
+	// OnReceiveResponse may be called multiple times for streaming RPCs
+	// before the final status is known.
+	statusCode := fmt.Sprintf("  Status Code: %d %s", h.respStatus.Code(), h.respStatus.Message())
+
+	headerResp := "  Headers:"
+	for key, values := range h.respHeaders {
+		headerResp += fmt.Sprintf("\n    ► %s: %s", key, strings.Join(values, ","))
+	}
+
+	for _, respStr := range h.respMessages {
+		output := fmt.Sprintf("\n%s\n\n%s\n\n%s", statusCode, headerResp, respStr)
+		h.grpc.Logger.PrintOutput(entity.Output{
+			Content:    output,
+			WithHeader: true,
+		})
+	}
 }
