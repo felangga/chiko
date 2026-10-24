@@ -17,6 +17,8 @@ func (u *UI) InitVimModeIndicator() *InitVimModeComponents {
 	vimIndc := tview.NewTextView().
 		SetText("Normal").
 		SetTextAlign(tview.AlignCenter)
+	// Style the indicator immediately so it is not blank on first draw.
+	applyVimModeStyle(vimIndc, entity.VimModeNormal)
 	v.Layout.AddItem(vimIndc, 0, 1, false)
 	v.Layout.SetBorder(true)
 
@@ -25,18 +27,23 @@ func (u *UI) InitVimModeIndicator() *InitVimModeComponents {
 		u.App.QueueUpdateDraw(func() {
 			vmc := i.(*events.VimModeChanged)
 			vimIndc.SetText(string(vmc.NewMode))
-			switch vmc.NewMode {
-			case entity.VimModeNormal:
-				vimIndc.SetBackgroundColor(tcell.ColorGreen)
-				vimIndc.SetTextColor(tcell.ColorBlack)
-			case entity.VimModeEdit:
-				vimIndc.SetBackgroundColor(tcell.ColorOrange)
-				vimIndc.SetTextColor(tcell.ColorBlack)
-			case entity.VimModeVisual:
-				vimIndc.SetBackgroundColor(tcell.ColorPurple)
-				vimIndc.SetTextColor(tcell.ColorBlack)
-			}
+			applyVimModeStyle(vimIndc, vmc.NewMode)
 		})
 	})
 	return v
+}
+
+// applyVimModeStyle sets the indicator colors for the given mode.
+func applyVimModeStyle(vimIndc *tview.TextView, mode entity.VimMode) {
+	switch mode {
+	case entity.VimModeNormal:
+		vimIndc.SetBackgroundColor(tcell.ColorGreen)
+		vimIndc.SetTextColor(tcell.ColorBlack)
+	case entity.VimModeEdit:
+		vimIndc.SetBackgroundColor(tcell.ColorOrange)
+		vimIndc.SetTextColor(tcell.ColorBlack)
+	case entity.VimModeVisual:
+		vimIndc.SetBackgroundColor(tcell.ColorPurple)
+		vimIndc.SetTextColor(tcell.ColorBlack)
+	}
 }
