@@ -30,6 +30,9 @@ type Session struct {
 	ConnectTimeout float64 `json:"connect_timeout"`
 	MaxTimeOut     float64 `json:"max_timeout"`
 	KeepAliveTime  float64 `json:"keepalive_time"`
+
+	// UI options (not persisted with bookmarks/history)
+	EnableVim bool `json:"-"`
 }
 
 // ParseMetadata used to convert the metadata and authorization parameters to array of strings

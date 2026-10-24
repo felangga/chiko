@@ -16,13 +16,13 @@ func (u *UI) InitSidebarMenu() *tview.List {
 
 	menuList.AddItem("Server URL", "", 'u', u.ShowSetServerURLModal)
 	menuList.AddItem("Methods", "", 'm', u.ShowSetRequestMethodModal)
-	menuList.AddItem("Authorization", "", 'a', u.ShowAuthorizationModal)
+	menuList.AddItem("Authorization", "", u.keyAuthorization(), u.ShowAuthorizationModal)
 	menuList.AddItem("Metadata", "", 'd', u.ShowMetadataModal)
 	menuList.AddItem("Request Payload", "", 'p', u.ShowRequestPayloadModal)
-	menuList.AddItem("Invoke", "", 'i', u.InvokeRPC)
+	menuList.AddItem("Invoke", "", u.keyInvoke(), u.InvokeRPC)
 	menuList.AddItem("[::d]"+strings.Repeat(string(tcell.RuneHLine), 25), "", 0, nil)
-	menuList.AddItem("Save Bookmark", "", 'b', u.ShowSaveToBookmarkModal)
-	menuList.AddItem("History", "", 'h', u.ShowHistoryModal)
+	menuList.AddItem("Save Bookmark", "", u.keyBookmark(), u.ShowSaveToBookmarkModal)
+	menuList.AddItem("History", "", u.keyHistory(), u.ShowHistoryModal)
 	menuList.AddItem("Quit", "", 'q', u.QuitApplication)
 
 	// Handle keypress on menu list

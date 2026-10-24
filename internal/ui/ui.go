@@ -16,16 +16,18 @@ import (
 	"github.com/felangga/chiko/internal/controller/grpc"
 	"github.com/felangga/chiko/internal/controller/history"
 	"github.com/felangga/chiko/internal/controller/storage"
+	"github.com/felangga/chiko/internal/controller/vimmode"
 	"github.com/felangga/chiko/internal/entity"
 	"github.com/felangga/chiko/internal/logger"
 )
 
 type ComponentLayout struct {
-	MenuList     *tview.List
-	BookmarkList *tview.TreeView
-	LogList      *tview.TextView
-	OutputPanel  InitOutputPanelComponents
-	HistoryPanel *tview.TreeView
+	MenuList         *tview.List
+	BookmarkList     *tview.TreeView
+	LogList          *tview.TextView
+	OutputPanel      InitOutputPanelComponents
+	HistoryPanel     *tview.TreeView
+	VimModeIndicator *InitVimModeComponents
 }
 
 type UI struct {
@@ -37,8 +39,11 @@ type UI struct {
 	Bookmark      *bookmark.Bookmark
 	History       *history.History
 	Storage       *storage.Storage
+	VimEnabled    bool
+	VimMode       *vimmode.VimMode
 	LogChannel    chan entity.Log
 	OutputChannel chan entity.Output
+	EventsChannel chan any
 
 	Theme *entity.Theme
 }
@@ -75,18 +80,27 @@ func NewUI(session entity.Session) UI {
 		Bookmark:      &bookmark,
 		History:       &history,
 		Storage:       &storage,
+		VimEnabled:    session.EnableVim,
 		LogChannel:    logger.LogChannel(),
 		OutputChannel: logger.OutputChannel(),
 		Theme:         &entity.TerminalTheme,
 	}
 
-	instance.Layout = &ComponentLayout{
+	if session.EnableVim {
+		instance.VimMode = vimmode.NewVimMode(app)
+	}
+
+	layout := &ComponentLayout{
 		MenuList:     instance.InitSidebarMenu(),
 		BookmarkList: instance.InitBookmarkMenu(),
 		LogList:      instance.InitLogList(),
 		OutputPanel:  instance.InitOutputPanel(),
 		HistoryPanel: instance.InitHistoryPanel(),
 	}
+	if session.EnableVim {
+		layout.VimModeIndicator = instance.InitVimModeIndicator()
+	}
+	instance.Layout = layout
 
 	// Background window (lowest Z) — containing the main app layout
 	bgWindow := wm.NewWindow().
@@ -126,8 +140,11 @@ func (u *UI) setupAppLayout() *tview.Flex {
 		AddItem(u.Layout.BookmarkList, 0, 1, false)
 
 	mainContent := tview.NewFlex().SetDirection(tview.FlexRow).
-		AddItem(u.Layout.OutputPanel.Layout, 0, 3, true).
-		AddItem(u.Layout.LogList, 10, 1, false)
+		AddItem(u.Layout.OutputPanel.Layout, 0, 3, true)
+	if u.VimEnabled && u.Layout.VimModeIndicator != nil {
+		mainContent.AddItem(u.Layout.VimModeIndicator.Layout, 3, 0, false)
+	}
+	mainContent.AddItem(u.Layout.LogList, 10, 1, false)
 
 	content := tview.NewFlex().SetDirection(tview.FlexColumn).
 		AddItem(sidebar, 35, 1, true).

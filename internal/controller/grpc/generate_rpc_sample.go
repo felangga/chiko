@@ -36,19 +36,21 @@ func (g *GRPC) GenerateRPCPayloadSample() (string, error) {
 		return "", err
 	}
 
-	if dsc, ok := dsc.(*desc.MessageDescriptor); ok {
-		tmpl := grpcurl.MakeTemplate(dsc)
-		options := grpcurl.FormatOptions{EmitJSONDefaultFields: true}
-		_, formatter, err := grpcurl.RequestParserAndFormatter(grpcurl.Format("json"), g.Conn.DescriptorSource, nil, options)
-		if err != nil {
-			return "", err
-		}
-		str, err := formatter(tmpl)
-		if err != nil {
-			return "", err
-		}
-		return str, nil
+	msgDesc, ok := dsc.(*desc.MessageDescriptor)
+	if !ok {
+		return "", fmt.Errorf("failed to generate sample")
 	}
 
-	return "", fmt.Errorf("failed to generate sample")
+	tmpl := grpcurl.MakeTemplate(msgDesc)
+	// Build a formatter only — RequestParserAndFormatter(nil) panics on Go 1.27+
+	// because encoding/json rejects a nil io.Reader when constructing the unused parser.
+	formatter := grpcurl.NewJSONFormatter(
+		true,
+		grpcurl.AnyResolverFromDescriptorSourceWithFallback(g.Conn.DescriptorSource),
+	)
+	str, err := formatter(tmpl)
+	if err != nil {
+		return "", err
+	}
+	return str, nil
 }

@@ -2,6 +2,7 @@ package ui
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/atotto/clipboard"
@@ -18,13 +19,20 @@ type InitOutputPanelComponents struct {
 	Buffer   string
 }
 
-var (
-	commands map[string]Commands
-)
+var commands map[string]Commands
+
+// func (u *UI) selectCurrentJsonField() {
+// 	ta := u.Layout.OutputPanel.TextArea
+// 	_, _, _, rdx := ta.GetInnerRect()
+// 	y, _, _, _ := ta.GetCursor()
+// }
 
 // InitOutputPanel initializes the output panel on the main screen
 func (u *UI) InitOutputPanel() InitOutputPanelComponents {
 	output := tview.NewTextArea()
+	if u.VimEnabled {
+		output.SetSelectedStyle(tcell.StyleDefault.Background(tcell.ColorYellow).Foreground(tcell.ColorBlack))
+	}
 	output.SetWrap(false)
 	output.SetMaxLength(1)
 	output.SetTextStyle(tcell.StyleDefault.
@@ -47,10 +55,13 @@ func (u *UI) InitOutputPanel() InitOutputPanelComponents {
 }
 
 func (u *UI) initOutputPanel_handleTextArea(textarea *tview.TextArea) {
+	selectAllKey := u.keySelectAll()
+	dumpKey := u.keyDumpFile()
+
 	commands = map[string]Commands{
 		"selectall": {
-			KeyComb:    'a',
-			CommandKey: "A",
+			KeyComb:    selectAllKey,
+			CommandKey: strings.ToUpper(string(selectAllKey)),
 			Text:       "Select All",
 			OnExecute: func() {
 				u.doSelectAll(textarea)
@@ -65,8 +76,8 @@ func (u *UI) initOutputPanel_handleTextArea(textarea *tview.TextArea) {
 			},
 		},
 		"writefile": {
-			KeyComb:    'w',
-			CommandKey: "W",
+			KeyComb:    dumpKey,
+			CommandKey: strings.ToUpper(string(dumpKey)),
 			Text:       "Dump To File",
 			OnExecute: func() {
 				u.doWriteToFile(textarea)
@@ -83,8 +94,13 @@ func (u *UI) initOutputPanel_handleTextArea(textarea *tview.TextArea) {
 	}
 
 	textarea.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		// Block backspace for editing the text area
-		if event.Key() == tcell.KeyBackspace || event.Key() == tcell.KeyBackspace2 {
+		// Block editing keys on the read-only output. With --vim, KeyBackspace
+		// (== KeyCtrlH) is left alone so VimMode can remap it; otherwise block both.
+		if u.VimEnabled {
+			if event.Key() == tcell.KeyBackspace2 {
+				return nil
+			}
+		} else if event.Key() == tcell.KeyBackspace || event.Key() == tcell.KeyBackspace2 {
 			return nil
 		}
 
@@ -95,7 +111,15 @@ func (u *UI) initOutputPanel_handleTextArea(textarea *tview.TextArea) {
 		}
 
 		for _, k := range commands {
-			if event.Key() == tcell.KeyRune && tcell.Key(event.Rune()) == tcell.Key(k.KeyComb) {
+			// Ignore modified runes so vim remaps (e.g. e → Alt-f for word-end)
+			// do not collide with panel keys like Dump-to-File ('f').
+			if event.Key() != tcell.KeyRune {
+				continue
+			}
+			if event.Modifiers()&(tcell.ModAlt|tcell.ModCtrl) != 0 {
+				continue
+			}
+			if event.Rune() == k.KeyComb {
 				k.OnExecute()
 				return nil
 			}
@@ -181,7 +205,6 @@ func (u *UI) doWriteToFile(textarea *tview.TextArea) {
 		}
 		return event
 	})
-
 }
 
 func (u *UI) doExportGrpcurlCommands() {

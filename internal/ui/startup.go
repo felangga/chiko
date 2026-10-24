@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rivo/tview"
 
+	"github.com/felangga/chiko/internal/controller/vimmode"
 	"github.com/felangga/chiko/internal/entity"
 )
 
@@ -23,6 +24,9 @@ func (u *UI) startupSequence() {
 	go u.checkForUpdates()
 	u.startArgsConnection()
 	u.setupGlobalInputCapture()
+	if u.VimEnabled {
+		u.registerDefaultVimBindings()
+	}
 }
 
 // loadStartupUI displays the welcome message and banner
@@ -143,40 +147,111 @@ func (u *UI) startLogDumper() {
 // Keys are suppressed when an InputField is focused to avoid interfering with text entry.
 func (u *UI) setupGlobalInputCapture() {
 	u.App.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		if u.VimEnabled && u.VimMode != nil {
+			event = u.VimMode.TranslateInput(event)
+			if event == nil {
+				return nil
+			}
+		}
+
 		// Only fire global shortcuts when no modal windows are open.
 		// WindowCount == 1 means only the main app window exists.
 		if u.WinMan.WindowCount() > 1 {
 			return event
 		}
 
-		// Don't intercept shortcuts while the user is typing in an input field
+		// Don't intercept shortcuts while typing (InputField, or vim Edit mode).
 		if _, ok := u.App.GetFocus().(*tview.InputField); ok {
 			return event
 		}
+		if u.VimEnabled && u.VimMode != nil && u.VimMode.ActiveMode == entity.VimModeEdit {
+			return event
+		}
 
-		switch event.Rune() {
+		switch r := event.Rune(); r {
 		case 'u':
 			u.ShowSetServerURLModal()
 		case 'm':
 			u.ShowSetRequestMethodModal()
-		case 'a':
-			u.ShowAuthorizationModal()
 		case 'd':
 			u.ShowMetadataModal()
 		case 'p':
 			u.ShowRequestPayloadModal()
-		case 'i':
-			u.InvokeRPC()
-		case 'h':
-			u.ShowHistoryModal()
-		case 'b':
-			u.ShowSaveToBookmarkModal()
 		case 'q':
 			u.QuitApplication()
 		default:
-			return event
+			switch {
+			case r == u.keyAuthorization():
+				u.ShowAuthorizationModal()
+			case r == u.keyInvoke():
+				u.InvokeRPC()
+			case r == u.keyBookmark():
+				u.ShowSaveToBookmarkModal()
+			case r == u.keyHistory():
+				u.ShowHistoryModal()
+			default:
+				return event
+			}
 		}
 
 		return nil
 	})
+}
+
+func (u *UI) registerDefaultVimBindings() {
+	// nvim-like: Normal moves without selecting; Visual extends selection;
+	// Edit leaves motions unbound so keys insert as text.
+	bindMotion := func(km vimmode.KeyMap, withSelection bool) {
+		mod := tcell.ModNone
+		wordMod := tcell.ModCtrl
+		// TextArea's Alt-f / Alt-b are native word jumps; Shift keeps selection.
+		altWordMod := tcell.ModAlt
+		if withSelection {
+			mod = tcell.ModShift
+			wordMod = tcell.ModCtrl | tcell.ModShift
+			altWordMod = tcell.ModAlt | tcell.ModShift
+		}
+
+		// Character / line motions.
+		km.Bind(
+			tcell.NewEventKey(tcell.KeyRune, 'h', tcell.ModNone),
+			tcell.NewEventKey(tcell.KeyLeft, 0, mod),
+		)
+		km.Bind(
+			tcell.NewEventKey(tcell.KeyRune, 'j', tcell.ModNone),
+			tcell.NewEventKey(tcell.KeyDown, 0, mod),
+		)
+		km.Bind(
+			tcell.NewEventKey(tcell.KeyRune, 'k', tcell.ModNone),
+			tcell.NewEventKey(tcell.KeyUp, 0, mod),
+		)
+		km.Bind(
+			tcell.NewEventKey(tcell.KeyRune, 'l', tcell.ModNone),
+			tcell.NewEventKey(tcell.KeyRight, 0, mod),
+		)
+
+		// Word motions (nvim w/b/e).
+		// w / Ctrl-Right — forward by one word
+		// b / Ctrl-Left  — back by one word
+		// e / Alt-f      — end of current/next word (TextArea native)
+		km.Bind(
+			tcell.NewEventKey(tcell.KeyRune, 'w', tcell.ModNone),
+			tcell.NewEventKey(tcell.KeyRight, 0, wordMod),
+		)
+		km.Bind(
+			tcell.NewEventKey(tcell.KeyRune, 'b', tcell.ModNone),
+			tcell.NewEventKey(tcell.KeyLeft, 0, wordMod),
+		)
+		km.Bind(
+			tcell.NewEventKey(tcell.KeyRune, 'e', tcell.ModNone),
+			tcell.NewEventKey(tcell.KeyRune, 'f', altWordMod),
+		)
+
+		// Ctrl-hjkl are handled in VimMode.translateCtrlHJKL so KeyCtrlL
+		// can never reach TextArea's select-all on key-repeat.
+	}
+
+	bindMotion(vimmode.NormalKeyMap, false)
+	bindMotion(vimmode.VisualKeyMap, true)
+	// EditKeyMap intentionally empty: motions insert as characters; Esc → Normal.
 }

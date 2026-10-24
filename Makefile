@@ -60,6 +60,11 @@ run:
 	@echo "Running $(BINARY_NAME)..."
 	$(GORUN) $(CMD_DIR)/main.go
 
+.PHONY: runvim
+runvim:
+	@echo "Running $(BINARY_NAME)..."
+	$(GORUN) $(CMD_DIR)/main.go --vim
+
 # Install dependencies
 .PHONY: deps
 deps:

@@ -23,6 +23,7 @@ type Flag struct {
 	KeepAliveTime      float64
 	MaxTimeOut         float64
 	MaxMsgSz           int
+	Vim                bool
 }
 
 func (f Flag) Validate() error {
@@ -80,6 +81,7 @@ func ParseFlags() (entity.Session, error) {
 	flag.Float64Var(&f.KeepAliveTime, "keepalive-time", 0, "Maximum idle time before keepalive probe")
 	flag.Float64Var(&f.MaxTimeOut, "max-time", 0, "Maximum total operation time")
 	flag.IntVar(&f.MaxMsgSz, "max-msg-sz", 4*1024*1024, "Maximum encoded response message size")
+	flag.BoolVar(&f.Vim, "vim", false, "Enable vim-style keybindings and mode indicator")
 
 	flag.Parse()
 
@@ -140,5 +142,6 @@ func ParseFlags() (entity.Session, error) {
 		KeepAliveTime:      f.KeepAliveTime,
 		SelectedMethod:     method,
 		SSLCert:            sslCert,
+		EnableVim:          f.Vim,
 	}, nil
 }
