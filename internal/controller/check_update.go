@@ -43,26 +43,40 @@ func CheckLatestVersion(currentVersion string) (latest string, isNewer bool, err
 	}
 
 	latest = strings.TrimPrefix(release.TagName, "v")
-	isNewer = compareVersions(latest, currentVersion) > 0
+	isNewer, err = compareVersions(latest, currentVersion)
+	if err != nil {
+		return "", false, err
+	}
 	return latest, isNewer, nil
 }
 
-// compareVersions returns >0 if a is newer than b, 0 if equal, <0 if older.
-func compareVersions(a, b string) int {
+// compareVersions returns true if a is newer than b, false if equal or older.
+// It compares all available segments and reports malformed non-numeric parts.
+func compareVersions(a, b string) (bool, error) {
 	aParts := strings.Split(a, ".")
 	bParts := strings.Split(b, ".")
-
-	for i := 0; i < 3; i++ {
+	max := len(aParts)
+	if len(bParts) > max {
+		max = len(bParts)
+	}
+	for i := 0; i < max; i++ {
 		var av, bv int
+		var err error
 		if i < len(aParts) {
-			av, _ = strconv.Atoi(aParts[i])
+			av, err = strconv.Atoi(aParts[i])
+			if err != nil {
+				return false, fmt.Errorf("invalid version segment %q in %q", aParts[i], a)
+			}
 		}
 		if i < len(bParts) {
-			bv, _ = strconv.Atoi(bParts[i])
+			bv, err = strconv.Atoi(bParts[i])
+			if err != nil {
+				return false, fmt.Errorf("invalid version segment %q in %q", bParts[i], b)
+			}
 		}
 		if av != bv {
-			return av - bv
+			return av > bv, nil
 		}
 	}
-	return 0
+	return false, nil
 }
